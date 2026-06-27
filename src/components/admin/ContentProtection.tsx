@@ -64,6 +64,8 @@ export function ContentProtection() {
   const save = useCallback((updated: ProtectionSettings) => {
     setSettings(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    // Trigger storage event secara manual untuk tab yang sama browser
+    window.dispatchEvent(new StorageEvent("storage", { key: STORAGE_KEY }));
   }, []);
 
   function toggleMaster() {
