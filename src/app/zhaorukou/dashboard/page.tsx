@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { FolderOpen, Wrench, Eye } from "lucide-react";
 import Link from "next/link";
 import type { Project, Skill } from "@/types/database";
+import SecurityPanel from "@/components/admin/SecurityPanel";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -155,6 +156,9 @@ export default async function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Content Protection */}
+      <SecurityPanel />
     </div>
   );
 }
