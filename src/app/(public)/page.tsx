@@ -21,7 +21,12 @@ export default async function Home() {
     .select("*")
     .order("order_index", { ascending: true });
 
-  const projects = (projectsData ?? []) as ProjectWithRelations[];
+  // Pastikan project_images selalu array dan project_categories tidak null
+  const projects = ((projectsData ?? []) as ProjectWithRelations[]).map((p) => ({
+    ...p,
+    project_images: p.project_images ?? [],
+    project_categories: p.project_categories ?? { id: "", name: "—", order_index: 0 },
+  }));
   const skills = (skillsData ?? []) as Skill[];
 
   return (

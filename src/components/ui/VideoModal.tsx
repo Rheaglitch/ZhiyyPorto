@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -13,7 +13,13 @@ interface VideoModalProps {
 }
 
 export function VideoModal({ videoUrl, isOpen, onClose }: VideoModalProps) {
+  const [mounted, setMounted] = useState(false);
   const videoId = extractYouTubeId(videoUrl);
+
+  // Only mount portal client-side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Lock body scroll saat modal open
   useEffect(() => {
@@ -37,13 +43,13 @@ export function VideoModal({ videoUrl, isOpen, onClose }: VideoModalProps) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
 
-  if (!videoId) return null;
+  if (!videoId || !mounted) return null;
 
-  const modal = (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -89,9 +95,7 @@ export function VideoModal({ videoUrl, isOpen, onClose }: VideoModalProps) {
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
-
-  if (typeof document === "undefined") return null;
-  return createPortal(modal, document.body);
 }

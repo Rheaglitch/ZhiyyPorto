@@ -55,7 +55,7 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
 
         {/* Category */}
         <span className="absolute top-3 right-3 px-2 py-0.5 rounded text-[10px] font-mono bg-dark-950/80 text-dark-400 border border-dark-800 z-10 pointer-events-none">
-          {project.project_categories.name}
+          {project.project_categories?.name ?? "—"}
         </span>
       </div>
 

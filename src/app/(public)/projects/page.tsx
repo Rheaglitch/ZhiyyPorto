@@ -16,7 +16,11 @@ export default async function ProjectsPage() {
     .select("*, project_categories(*), project_images(id, url, storage_path, order_index)")
     .order("order_index", { ascending: true });
 
-  const projects = (projectsData ?? []) as ProjectWithRelations[];
+  const projects = ((projectsData ?? []) as ProjectWithRelations[]).map((p) => ({
+    ...p,
+    project_images: p.project_images ?? [],
+    project_categories: p.project_categories ?? { id: "", name: "—", order_index: 0 },
+  }));
 
   // Fetch only categories that have at least one project
   const usedCategoryIds = [...new Set(projects.map((p) => p.category_id))];
