@@ -42,6 +42,37 @@ CREATE POLICY "Public read skills"
   ON public.skills FOR SELECT
   USING (true);
 
+-- Write access hanya untuk user yang sudah login (admin)
+CREATE POLICY "Auth users can insert projects"
+  ON public.projects FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "Auth users can update projects"
+  ON public.projects FOR UPDATE
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Auth users can delete projects"
+  ON public.projects FOR DELETE
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Auth users can insert skills"
+  ON public.skills FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "Auth users can update skills"
+  ON public.skills FOR UPDATE
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Auth users can delete skills"
+  ON public.skills FOR DELETE
+  TO authenticated
+  USING (true);
+
 -- ============================================
 -- Seed data contoh (opsional)
 -- ============================================
