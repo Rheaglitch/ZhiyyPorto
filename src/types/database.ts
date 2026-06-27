@@ -79,6 +79,20 @@ export interface Database {
           order_index?: number;
         };
       };
+      site_settings: {
+        Row: {
+          key: string;
+          value: Record<string, unknown>;
+        };
+        Insert: {
+          key: string;
+          value: Record<string, unknown>;
+        };
+        Update: {
+          key?: string;
+          value?: Record<string, unknown>;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-
-const STORAGE_KEY = "zhiyy_content_protection";
+import { useEffect, useRef } from "react";
 
 interface ProtectionSettings {
   masterEnabled: boolean;
@@ -12,25 +10,11 @@ interface ProtectionSettings {
   blockDevTools: boolean;
 }
 
-function getSettings(): ProtectionSettings {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
-  } catch {}
-  return {
-    masterEnabled: false,
-    disableRightClick: false,
-    blurOnLeave: false,
-    disableSelection: false,
-    blockDevTools: false,
-  };
-}
-
-// Simpan semua cleanup handlers secara global supaya bisa di-reset
+// Active cleanup functions — global so applyProtection can reset them
 let activeCleanups: (() => void)[] = [];
 
 function applyProtection(settings: ProtectionSettings) {
-  // Bersihkan semua handler lama dulu
+  // Clear all existing handlers
   activeCleanups.forEach((fn) => fn());
   activeCleanups = [];
 
@@ -40,40 +24,41 @@ function applyProtection(settings: ProtectionSettings) {
   if (settings.disableRightClick) {
     const handler = (e: MouseEvent) => {
       e.preventDefault();
-      e.stopPropagation();
+      e.stopImmediatePropagation();
       return false;
     };
     document.addEventListener("contextmenu", handler, true);
-    window.addEventListener("contextmenu", handler, true);
-    activeCleanups.push(() => {
-      document.removeEventListener("contextmenu", handler, true);
-      window.removeEventListener("contextmenu", handler, true);
-    });
+    activeCleanups.push(() =>
+      document.removeEventListener("contextmenu", handler, true)
+    );
   }
 
-  // 2. Blur on cursor leave
+  // 2. Blur overlay when cursor leaves window
   if (settings.blurOnLeave) {
-    let overlay = document.getElementById("__zhiyy_blur__");
+    let overlay = document.getElementById("__zhiyy_blur__") as HTMLDivElement | null;
     if (!overlay) {
       overlay = document.createElement("div");
       overlay.id = "__zhiyy_blur__";
-      overlay.style.cssText = `
-        position:fixed;inset:0;z-index:99999;
-        backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-        background:rgba(10,10,10,0.6);
-        display:none;pointer-events:none;transition:opacity 0.2s;
-      `;
+      Object.assign(overlay.style, {
+        position: "fixed",
+        inset: "0",
+        zIndex: "999999",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        background: "rgba(10,10,10,0.55)",
+        display: "none",
+        pointerEvents: "none",
+      });
       document.body.appendChild(overlay);
     }
     const el = overlay;
-    const onLeave = (e: MouseEvent) => {
-      if (e.clientY <= 0 || e.clientX <= 0 || e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
-        el.style.display = "block";
-      }
-    };
+
+    const onLeave = () => { el.style.display = "block"; };
     const onEnter = () => { el.style.display = "none"; };
+
     document.addEventListener("mouseleave", onLeave);
     document.addEventListener("mouseenter", onEnter);
+
     activeCleanups.push(() => {
       document.removeEventListener("mouseleave", onLeave);
       document.removeEventListener("mouseenter", onEnter);
@@ -84,74 +69,80 @@ function applyProtection(settings: ProtectionSettings) {
     if (el) el.style.display = "none";
   }
 
-  // 3. Disable text selection + copy/cut
+  // 3. Disable text selection & copy/cut
   if (settings.disableSelection) {
-    let styleEl = document.getElementById("__zhiyy_noselect__");
-    if (!styleEl) {
-      styleEl = document.createElement("style");
-      styleEl.id = "__zhiyy_noselect__";
-      document.head.appendChild(styleEl);
+    let style = document.getElementById("__zhiyy_nosel__") as HTMLStyleElement | null;
+    if (!style) {
+      style = document.createElement("style");
+      style.id = "__zhiyy_nosel__";
+      document.head.appendChild(style);
     }
-    styleEl.textContent = `*{user-select:none!important;-webkit-user-select:none!important;-moz-user-select:none!important;}`;
+    style.textContent =
+      "* { user-select: none !important; -webkit-user-select: none !important; }";
 
-    const handler = (e: ClipboardEvent) => { e.preventDefault(); };
-    document.addEventListener("copy", handler, true);
-    document.addEventListener("cut", handler, true);
+    const onCopy = (e: ClipboardEvent) => e.preventDefault();
+    const onCut = (e: ClipboardEvent) => e.preventDefault();
+    document.addEventListener("copy", onCopy, true);
+    document.addEventListener("cut", onCut, true);
+
     activeCleanups.push(() => {
-      const el = document.getElementById("__zhiyy_noselect__");
-      if (el) el.textContent = "";
-      document.removeEventListener("copy", handler, true);
-      document.removeEventListener("cut", handler, true);
+      const s = document.getElementById("__zhiyy_nosel__");
+      if (s) s.textContent = "";
+      document.removeEventListener("copy", onCopy, true);
+      document.removeEventListener("cut", onCut, true);
     });
   } else {
-    const el = document.getElementById("__zhiyy_noselect__");
-    if (el) el.textContent = "";
+    const s = document.getElementById("__zhiyy_nosel__");
+    if (s) s.textContent = "";
   }
 
   // 4. Block DevTools shortcuts
   if (settings.blockDevTools) {
-    const handler = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       const ctrl = e.ctrlKey || e.metaKey;
+      const key = e.key.toUpperCase();
       const blocked =
         e.key === "F12" ||
-        (ctrl && e.shiftKey && ["I", "J", "C", "i", "j", "c"].includes(e.key)) ||
-        (ctrl && ["U", "S", "P", "u", "s", "p"].includes(e.key));
+        (ctrl && e.shiftKey && ["I", "J", "C"].includes(key)) ||
+        (ctrl && !e.shiftKey && ["U", "S", "P"].includes(key));
       if (blocked) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        return false;
       }
     };
-    document.addEventListener("keydown", handler, true);
-    window.addEventListener("keydown", handler, true);
-    activeCleanups.push(() => {
-      document.removeEventListener("keydown", handler, true);
-      window.removeEventListener("keydown", handler, true);
-    });
+    document.addEventListener("keydown", onKey, true);
+    activeCleanups.push(() =>
+      document.removeEventListener("keydown", onKey, true)
+    );
+  }
+}
+
+async function fetchAndApply() {
+  try {
+    const res = await fetch("/api/protection-settings", { cache: "no-store" });
+    const settings: ProtectionSettings = await res.json();
+    applyProtection(settings);
+  } catch {
+    // silently fail — don't break the page
   }
 }
 
 export function useContentProtection() {
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   useEffect(() => {
-    // Apply saat pertama kali
-    applyProtection(getSettings());
+    // Apply immediately on mount
+    fetchAndApply();
 
-    // Re-apply setiap ada perubahan localStorage dari tab lain (dashboard)
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) {
-        applyProtection(getSettings());
-      }
-    };
-    window.addEventListener("storage", onStorage);
+    // Poll every 5 seconds to pick up changes made from dashboard
+    intervalRef.current = setInterval(fetchAndApply, 5000);
 
-    // Re-apply setiap tab jadi fokus (kembali dari tab dashboard)
-    const onFocus = () => {
-      applyProtection(getSettings());
-    };
+    // Also re-apply when tab regains focus
+    const onFocus = () => fetchAndApply();
     window.addEventListener("focus", onFocus);
 
     return () => {
-      window.removeEventListener("storage", onStorage);
+      if (intervalRef.current) clearInterval(intervalRef.current);
       window.removeEventListener("focus", onFocus);
       activeCleanups.forEach((fn) => fn());
       activeCleanups = [];

@@ -74,8 +74,34 @@ CREATE POLICY "Auth users can delete skills"
   USING (true);
 
 -- ============================================
--- Seed data contoh (opsional)
+-- Content Protection Settings
 -- ============================================
+CREATE TABLE IF NOT EXISTS public.site_settings (
+  key   TEXT PRIMARY KEY,
+  value JSONB NOT NULL
+);
+
+-- Insert default content protection settings
+INSERT INTO public.site_settings (key, value)
+VALUES (
+  'content_protection',
+  '{"masterEnabled":false,"disableRightClick":false,"blurOnLeave":false,"disableSelection":false,"blockDevTools":false}'::jsonb
+)
+ON CONFLICT (key) DO NOTHING;
+
+-- Public read
+CREATE POLICY "Public read site_settings"
+  ON public.site_settings FOR SELECT
+  USING (true);
+
+-- Authenticated write
+CREATE POLICY "Auth users can update site_settings"
+  ON public.site_settings FOR ALL
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 
 INSERT INTO public.skills (name, category, level, order_index) VALUES
   ('Next.js',     'Frontend', 90, 1),
