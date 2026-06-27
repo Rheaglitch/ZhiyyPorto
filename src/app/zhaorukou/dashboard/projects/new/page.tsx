@@ -1,6 +1,17 @@
+import { createClient } from "@/lib/supabase/server";
 import { ProjectForm } from "@/components/admin/ProjectForm";
+import type { ProjectCategory } from "@/types/database";
 
-export default function NewProjectPage() {
+export default async function NewProjectPage() {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("project_categories")
+    .select("*")
+    .order("order_index", { ascending: true });
+
+  const categories = (data ?? []) as ProjectCategory[];
+
   return (
     <div>
       <div className="mb-8">
@@ -9,7 +20,7 @@ export default function NewProjectPage() {
           {`// isi detail project baru`}
         </p>
       </div>
-      <ProjectForm />
+      <ProjectForm categories={categories} />
     </div>
   );
 }

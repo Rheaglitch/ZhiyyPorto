@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
-import { ProjectCard } from "@/components/ui/ProjectCard";
+import { ProjectsClientPage } from "@/app/(public)/projects/ProjectsClientPage";
 import type { Metadata } from "next";
-import type { Project } from "@/types/database";
+import type { ProjectWithRelations, ProjectCategory } from "@/types/database";
 
 export const metadata: Metadata = {
   title: "Projects",
@@ -11,13 +11,25 @@ export const metadata: Metadata = {
 export default async function ProjectsPage() {
   const supabase = await createClient();
 
-  const { data } = await supabase
+  const { data: projectsData } = await supabase
     .from("projects")
-    .select("*")
+    .select("*, project_categories(*), project_images(id, url, storage_path, order_index)")
     .order("order_index", { ascending: true });
 
-  const projects = (data ?? []) as Project[];
-  const categories = [...new Set(projects.map((p) => p.category))];
+  const projects = (projectsData ?? []) as ProjectWithRelations[];
+
+  // Fetch only categories that have at least one project
+  const usedCategoryIds = [...new Set(projects.map((p) => p.category_id))];
+
+  let categories: ProjectCategory[] = [];
+  if (usedCategoryIds.length > 0) {
+    const { data: catData } = await supabase
+      .from("project_categories")
+      .select("*")
+      .in("id", usedCategoryIds)
+      .order("order_index", { ascending: true });
+    categories = (catData ?? []) as ProjectCategory[];
+  }
 
   return (
     <section className="min-h-screen pt-28 pb-20 px-6">
@@ -36,31 +48,12 @@ export default async function ProjectsPage() {
           </p>
         </div>
 
-        {/* Category filter labels */}
-        {categories.length > 0 && (
-          <div className="flex flex-wrap gap-2 justify-center mb-12">
-            {categories.map((cat) => (
-              <span
-                key={cat}
-                className="px-4 py-1.5 rounded-full text-xs font-mono border border-dark-800 text-dark-400 uppercase tracking-wider"
-              >
-                {cat}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Grid */}
-        {projects.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
-        ) : (
+        {projects.length === 0 ? (
           <div className="text-center py-24 text-dark-500">
             <p className="font-mono text-sm">{`// belum ada project nih`}</p>
           </div>
+        ) : (
+          <ProjectsClientPage projects={projects} categories={categories} />
         )}
       </div>
     </section>

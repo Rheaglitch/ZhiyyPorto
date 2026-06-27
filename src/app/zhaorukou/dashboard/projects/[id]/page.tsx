@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { ProjectForm } from "@/components/admin/ProjectForm";
 import { notFound } from "next/navigation";
-import type { Project } from "@/types/database";
+import type { ProjectWithRelations, ProjectCategory, ProjectImage } from "@/types/database";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -11,15 +11,23 @@ export default async function EditProjectPage({ params }: Props) {
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data } = await supabase
-    .from("projects")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const [{ data: projectData }, { data: categoriesData }] = await Promise.all([
+    supabase
+      .from("projects")
+      .select("*, project_categories(*), project_images(*)")
+      .eq("id", id)
+      .single(),
+    supabase
+      .from("project_categories")
+      .select("*")
+      .order("order_index", { ascending: true }),
+  ]);
 
-  if (!data) notFound();
+  if (!projectData) notFound();
 
-  const project = data as Project;
+  const project = projectData as ProjectWithRelations;
+  const categories = (categoriesData ?? []) as ProjectCategory[];
+  const existingImages = (project.project_images ?? []) as ProjectImage[];
 
   return (
     <div>
@@ -29,7 +37,11 @@ export default async function EditProjectPage({ params }: Props) {
           {`// ${project.title}`}
         </p>
       </div>
-      <ProjectForm project={project} />
+      <ProjectForm
+        project={project}
+        categories={categories}
+        existingImages={existingImages}
+      />
     </div>
   );
 }

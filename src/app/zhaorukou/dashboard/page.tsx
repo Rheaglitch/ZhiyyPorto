@@ -1,18 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
 import { FolderOpen, Wrench, Eye } from "lucide-react";
 import Link from "next/link";
-import type { Project, Skill } from "@/types/database";
+import type { ProjectWithCategory, Skill } from "@/types/database";
 import { ContentProtection } from "@/components/admin/ContentProtection";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
 
   const [{ data: projectsData }, { data: skillsData }] = await Promise.all([
-    supabase.from("projects").select("*"),
+    supabase.from("projects").select("*, project_categories(name)"),
     supabase.from("skills").select("*"),
   ]);
 
-  const projects = (projectsData ?? []) as Project[];
+  const projects = (projectsData ?? []) as ProjectWithCategory[];
   const skills = (skillsData ?? []) as Skill[];
   const featured = projects.filter((p) => p.featured).length;
 
@@ -136,7 +136,7 @@ export default async function DashboardPage() {
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-dark-500 hidden sm:table-cell font-mono text-xs">
-                      {p.category}
+                      {p.project_categories?.name ?? "—"}
                     </td>
                     <td className="px-4 py-3 hidden sm:table-cell">
                       {p.featured ? (

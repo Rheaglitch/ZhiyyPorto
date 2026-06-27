@@ -2,16 +2,16 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { DeleteProjectButton } from "@/components/admin/DeleteProjectButton";
-import type { Project } from "@/types/database";
+import type { ProjectWithCategory } from "@/types/database";
 
 export default async function AdminProjectsPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("projects")
-    .select("*")
+    .select("*, project_categories(name)")
     .order("order_index", { ascending: true });
 
-  const projects = (data ?? []) as Project[];
+  const projects = (data ?? []) as ProjectWithCategory[];
 
   return (
     <div>
@@ -69,7 +69,7 @@ export default async function AdminProjectsPage() {
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     <span className="text-xs font-mono text-dark-500 bg-dark-900 border border-dark-800 px-2 py-0.5 rounded">
-                      {project.category}
+                      {project.project_categories?.name ?? "—"}
                     </span>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ProjectCard } from "@/components/ui/ProjectCard";
-import type { Project } from "@/types/database";
+import type { ProjectWithRelations } from "@/types/database";
 
 interface ProjectsSectionProps {
-  projects: Project[];
+  projects: ProjectWithRelations[];
 }
 
 export function ProjectsSection({ projects }: ProjectsSectionProps) {

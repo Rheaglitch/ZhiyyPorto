@@ -3,13 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin-client";
-import type { Project } from "@/types/database";
+import { isValidYouTubeUrl } from "@/types/database";
+import { ImageUploader } from "@/components/admin/ImageUploader";
+import { CategoryCombobox } from "@/components/admin/CategoryCombobox";
+import type { ProjectWithRelations, ProjectCategory, ProjectImage } from "@/types/database";
 
 interface ProjectFormProps {
-  project?: Project;
+  project?: ProjectWithRelations;
+  categories: ProjectCategory[];
+  existingImages?: ProjectImage[];
 }
 
-export function ProjectForm({ project }: ProjectFormProps) {
+export function ProjectForm({ project, categories, existingImages = [] }: ProjectFormProps) {
   const router = useRouter();
   const isEdit = !!project;
 
@@ -18,23 +23,27 @@ export function ProjectForm({ project }: ProjectFormProps) {
     description: project?.description ?? "",
     long_description: project?.long_description ?? "",
     tech_stack: project?.tech_stack?.join(", ") ?? "",
-    image_url: project?.image_url ?? "",
     live_url: project?.live_url ?? "",
     github_url: project?.github_url ?? "",
+    video_url: project?.video_url ?? "",
     featured: project?.featured ?? false,
     order_index: project?.order_index ?? 0,
-    category: project?.category ?? "Web",
   });
 
+  const [categoryId, setCategoryId] = useState<string | null>(
+    project?.category_id ?? null
+  );
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [imagesToDelete, setImagesToDelete] = useState<ProjectImage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
 
   function handleChange(
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
     const { name, value, type } = e.target;
+    if (name === "video_url") setVideoError(null);
     setForm((prev) => ({
       ...prev,
       [name]:
@@ -42,8 +51,56 @@ export function ProjectForm({ project }: ProjectFormProps) {
     }));
   }
 
+  function handleVideoBlur() {
+    if (form.video_url && !isValidYouTubeUrl(form.video_url)) {
+      setVideoError("URL video tidak valid. Gunakan format YouTube: watch?v=... atau youtu.be/...");
+    } else {
+      setVideoError(null);
+    }
+  }
+
+  async function uploadFiles(projectId: string, files: File[]) {
+    const supabase = createAdminClient();
+    const uploaded: Array<{ storage_path: string; url: string }> = [];
+
+    for (const file of files) {
+      const timestamp = Date.now();
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const storagePath = `projects/${projectId}/${timestamp}-${safeName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("project-images")
+        .upload(storagePath, file, { upsert: false });
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError.message);
+        continue;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("project-images")
+        .getPublicUrl(storagePath);
+
+      uploaded.push({ storage_path: storagePath, url: urlData.publicUrl });
+    }
+
+    return uploaded;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // Validate video_url
+    if (form.video_url && !isValidYouTubeUrl(form.video_url)) {
+      setVideoError("URL video tidak valid. Gunakan format YouTube: watch?v=... atau youtu.be/...");
+      return;
+    }
+
+    if (!categoryId) {
+      setError("Pilih atau buat category terlebih dahulu.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -55,25 +112,74 @@ export function ProjectForm({ project }: ProjectFormProps) {
       long_description: form.long_description || null,
       tech_stack: form.tech_stack
         .split(",")
-        .map((t) => t.trim())
+        .map((t: string) => t.trim())
         .filter(Boolean),
-      image_url: form.image_url || null,
       live_url: form.live_url || null,
       github_url: form.github_url || null,
+      video_url: form.video_url || null,
       featured: form.featured,
       order_index: Number(form.order_index),
-      category: form.category,
+      category_id: categoryId,
     };
 
-    if (isEdit) {
-      const { error } = await supabase
+    if (isEdit && project) {
+      // Update project
+      const { error: updateError } = await supabase
         .from("projects")
         .update(payload)
         .eq("id", project.id);
-      if (error) { setError(error.message); setLoading(false); return; }
+      if (updateError) {
+        setError(updateError.message);
+        setLoading(false);
+        return;
+      }
+
+      // Delete marked images from Storage + DB
+      for (const img of imagesToDelete) {
+        await supabase.storage
+          .from("project-images")
+          .remove([img.storage_path]);
+        await supabase
+          .from("project_images")
+          .delete()
+          .eq("id", img.id);
+      }
+
+      // Upload new pending files
+      if (pendingFiles.length > 0) {
+        const uploaded = await uploadFiles(project.id, pendingFiles);
+        for (const u of uploaded) {
+          await supabase.from("project_images").insert({
+            project_id: project.id,
+            storage_path: u.storage_path,
+            url: u.url,
+          });
+        }
+      }
     } else {
-      const { error } = await supabase.from("projects").insert(payload);
-      if (error) { setError(error.message); setLoading(false); return; }
+      // Insert new project
+      const { data: newProject, error: insertError } = await supabase
+        .from("projects")
+        .insert(payload)
+        .select("id")
+        .single();
+      if (insertError || !newProject) {
+        setError(insertError?.message ?? "Gagal membuat project.");
+        setLoading(false);
+        return;
+      }
+
+      // Upload images for new project
+      if (pendingFiles.length > 0) {
+        const uploaded = await uploadFiles(newProject.id, pendingFiles);
+        for (const u of uploaded) {
+          await supabase.from("project_images").insert({
+            project_id: newProject.id,
+            storage_path: u.storage_path,
+            url: u.url,
+          });
+        }
+      }
     }
 
     router.push("/zhaorukou/dashboard/projects");
@@ -83,6 +189,10 @@ export function ProjectForm({ project }: ProjectFormProps) {
   const inputClass =
     "w-full px-4 py-2.5 rounded-lg bg-dark-900 border border-dark-800 text-dark-200 placeholder-dark-700 text-sm focus:outline-none focus:border-blood-700 transition-colors";
   const labelClass = "block text-xs font-mono text-dark-500 mb-1.5";
+
+  // Compute displayed existing images (minus marked-for-deletion)
+  const deleteIds = new Set(imagesToDelete.map((i) => i.id));
+  const displayedExisting = existingImages.filter((img) => !deleteIds.has(img.id));
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 max-w-2xl">
@@ -139,19 +249,12 @@ export function ProjectForm({ project }: ProjectFormProps) {
         </div>
 
         <div>
-          <label className={labelClass}>Category</label>
-          <select
-            name="category"
-            value={form.category}
-            onChange={handleChange}
-            className={inputClass}
-          >
-            {["Web", "Mobile", "Backend", "UI/UX", "Other"].map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
+          <label className={labelClass}>Category *</label>
+          <CategoryCombobox
+            categories={categories}
+            value={categoryId}
+            onChange={setCategoryId}
+          />
         </div>
 
         <div>
@@ -191,14 +294,29 @@ export function ProjectForm({ project }: ProjectFormProps) {
         </div>
 
         <div className="sm:col-span-2">
-          <label className={labelClass}>Image URL</label>
+          <label className={labelClass}>Video URL (YouTube)</label>
           <input
-            name="image_url"
-            type="url"
-            value={form.image_url}
+            name="video_url"
+            type="text"
+            value={form.video_url}
             onChange={handleChange}
-            placeholder="https://... (dari Supabase Storage atau URL lain)"
-            className={inputClass}
+            onBlur={handleVideoBlur}
+            placeholder="https://www.youtube.com/watch?v=... (opsional)"
+            className={`${inputClass}${videoError ? " border-blood-700" : ""}`}
+          />
+          {videoError && (
+            <p className="text-xs text-blood-400 font-mono mt-1">{videoError}</p>
+          )}
+        </div>
+
+        <div className="sm:col-span-2">
+          <ImageUploader
+            projectId={project?.id}
+            existingImages={displayedExisting}
+            onPendingFilesChange={setPendingFiles}
+            onDeleteExisting={(img) =>
+              setImagesToDelete((prev) => [...prev, img])
+            }
           />
         </div>
 
@@ -211,7 +329,10 @@ export function ProjectForm({ project }: ProjectFormProps) {
             onChange={handleChange}
             className="w-4 h-4 accent-blood-600 rounded"
           />
-          <label htmlFor="featured" className="text-sm text-dark-300 cursor-pointer">
+          <label
+            htmlFor="featured"
+            className="text-sm text-dark-300 cursor-pointer"
+          >
             Featured — tampilkan di homepage
           </label>
         </div>

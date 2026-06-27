@@ -18,6 +18,25 @@ export function DeleteProjectButton({ id, title }: Props) {
   async function handleDelete() {
     setLoading(true);
     const supabase = createAdminClient();
+
+    // List all storage files for this project (best-effort cleanup)
+    try {
+      const { data: files } = await supabase.storage
+        .from("project-images")
+        .list(`projects/${id}`);
+
+      if (files && files.length > 0) {
+        const paths = files.map(
+          (f: { name: string }) => `projects/${id}/${f.name}`
+        );
+        await supabase.storage.from("project-images").remove(paths);
+      }
+    } catch (err) {
+      // Storage cleanup failure is non-fatal; log and continue
+      console.error("Storage cleanup error:", err);
+    }
+
+    // Delete the project row (cascade deletes project_images rows)
     await supabase.from("projects").delete().eq("id", id);
     router.refresh();
   }

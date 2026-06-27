@@ -1,14 +1,20 @@
-import Image from "next/image";
-import { ExternalLink, Github } from "lucide-react";
-import type { Project } from "@/types/database";
+"use client";
+
+import { useState } from "react";
+import { ExternalLink, Github, Play } from "lucide-react";
+import type { ProjectWithRelations } from "@/types/database";
 import { cn } from "@/lib/utils";
+import { ImageCarousel } from "@/components/ui/ImageCarousel";
+import { VideoModal } from "@/components/ui/VideoModal";
 
 interface ProjectCardProps {
-  project: Project;
+  project: ProjectWithRelations;
   className?: string;
 }
 
 export function ProjectCard({ project, className }: ProjectCardProps) {
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
+
   return (
     <article
       className={cn(
@@ -16,36 +22,40 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
         className
       )}
     >
-      {/* Thumbnail */}
+      {/* Thumbnail / Carousel */}
       <div className="relative w-full h-48 bg-dark-900 overflow-hidden">
-        {project.image_url ? (
-          <Image
-            src={project.image_url}
-            alt={project.title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="font-mono text-4xl font-black text-dark-800 select-none">
-              {project.title.slice(0, 2).toUpperCase()}
-            </div>
-          </div>
-        )}
+        <ImageCarousel
+          images={project.project_images}
+          alt={project.title}
+          fallbackText={project.title}
+        />
 
         {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-blood-950/0 group-hover:bg-blood-950/40 transition-colors duration-300" />
+        <div className="absolute inset-0 bg-blood-950/0 group-hover:bg-blood-950/40 transition-colors duration-300 pointer-events-none" />
+
+        {/* Video play button overlay */}
+        {project.video_url !== null && (
+          <button
+            onClick={() => setIsVideoOpen(true)}
+            className="absolute inset-0 flex items-center justify-center z-10"
+            aria-label={`Tonton video ${project.title}`}
+          >
+            <span className="w-11 h-11 rounded-full bg-black/60 hover:bg-blood-700/80 border border-white/20 flex items-center justify-center transition-colors">
+              <Play size={20} className="text-white ml-0.5" />
+            </span>
+          </button>
+        )}
 
         {/* Featured badge */}
         {project.featured && (
-          <span className="absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-mono bg-blood-800/80 text-blood-200 border border-blood-700/50">
+          <span className="absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-mono bg-blood-800/80 text-blood-200 border border-blood-700/50 z-10 pointer-events-none">
             Featured
           </span>
         )}
 
         {/* Category */}
-        <span className="absolute top-3 right-3 px-2 py-0.5 rounded text-[10px] font-mono bg-dark-950/80 text-dark-400 border border-dark-800">
-          {project.category}
+        <span className="absolute top-3 right-3 px-2 py-0.5 rounded text-[10px] font-mono bg-dark-950/80 text-dark-400 border border-dark-800 z-10 pointer-events-none">
+          {project.project_categories.name}
         </span>
       </div>
 
@@ -106,6 +116,15 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
           )}
         </div>
       </div>
+
+      {/* Video Modal */}
+      {project.video_url && (
+        <VideoModal
+          videoUrl={project.video_url}
+          isOpen={isVideoOpen}
+          onClose={() => setIsVideoOpen(false)}
+        />
+      )}
     </article>
   );
 }

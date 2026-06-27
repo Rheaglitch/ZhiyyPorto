@@ -4,14 +4,14 @@ import { SkillsSection } from "@/components/sections/SkillsSection";
 import { ProjectsSection } from "@/components/sections/ProjectsSection";
 import { ContactSection } from "@/components/sections/ContactSection";
 import { createClient } from "@/lib/supabase/server";
-import type { Project, Skill } from "@/types/database";
+import type { ProjectWithRelations, Skill } from "@/types/database";
 
 export default async function Home() {
   const supabase = await createClient();
 
   const { data: projectsData } = await supabase
     .from("projects")
-    .select("*")
+    .select("*, project_categories(*), project_images(id, url, storage_path, order_index)")
     .eq("featured", true)
     .order("order_index", { ascending: true })
     .limit(6);
@@ -21,7 +21,7 @@ export default async function Home() {
     .select("*")
     .order("order_index", { ascending: true });
 
-  const projects = (projectsData ?? []) as Project[];
+  const projects = (projectsData ?? []) as ProjectWithRelations[];
   const skills = (skillsData ?? []) as Skill[];
 
   return (
