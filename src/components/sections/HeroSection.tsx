@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ErrorCodeScroll } from "@/components/ui/ErrorCodeScroll";
 
 // ─── Hero Photo — grayscale+blur default, color+sharp on hover ───────────────
 function HeroPhoto({ src }: { src: string }) {
@@ -191,13 +192,16 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
       id="home"
       className="relative min-h-screen overflow-hidden animated-gradient-bg"
     >
+      {/* ── Error code scroll — behind crescent, right side only ── */}
+      <ErrorCodeScroll />
+
       {/* ── Crescent — behind photo ── */}
       <Crescent />
 
       {/* ── Photo — right side ── */}
       <div
-        className="absolute z-[3] pointer-events-none select-none"
-        style={{ right: 0, bottom: 0, height: "100%", width: "48%" }}
+        className="absolute z-[3] select-none"
+        style={{ right: 0, bottom: 0, height: "100%", width: "48%", cursor: "none" }}
       >
         <HeroPhoto src={imageUrl} />
       </div>

@@ -46,7 +46,7 @@ export function GlitchIntro() {
           className="font-black text-6xl md:text-8xl tracking-tighter text-white block"
           style={{ animation: "glitchMain 0.2s steps(1) infinite" }}
         >
-          ZHIYY
+          ZIYYZOYA
         </span>
         {/* Red channel shift */}
         <span
@@ -57,7 +57,7 @@ export function GlitchIntro() {
             animation: "glitchRed 0.18s steps(2) infinite",
           }}
         >
-          ZHIYY
+          ZIYYZOYA
         </span>
         {/* Blue channel shift */}
         <span
@@ -68,7 +68,7 @@ export function GlitchIntro() {
             animation: "glitchBlue 0.22s steps(2) infinite",
           }}
         >
-          ZHIYY
+          ZIYYZOYA
         </span>
       </div>
 
