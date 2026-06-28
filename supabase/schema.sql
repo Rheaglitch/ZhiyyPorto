@@ -162,12 +162,15 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
   value JSONB NOT NULL
 );
 
+-- ============================================
+-- Hero Image Setting
+-- ============================================
 INSERT INTO public.site_settings (key, value)
 VALUES (
-  'content_protection',
-  '{"masterEnabled":false,"disableRightClick":false,"blurOnLeave":false,"disableSelection":false,"blockDevTools":false}'::jsonb
+  'hero_image',
+  '{"url":"https://zljhjdhknybktcvtdutz.supabase.co/storage/v1/object/public/hero/ab9e4d158163df3ee068613735669b04-removebg-preview.png"}'::jsonb
 )
-ON CONFLICT (key) DO NOTHING;
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
 CREATE POLICY "Public read site_settings"
   ON public.site_settings FOR SELECT

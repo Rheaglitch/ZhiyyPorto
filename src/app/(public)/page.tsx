@@ -10,46 +10,47 @@ import type { ProjectWithRelations, Skill } from "@/types/database";
 export default async function Home() {
   const supabase = await createClient();
 
-  const { data: projectsData } = await supabase
-    .from("projects")
-    .select("*, project_categories(*), project_images(id, url, storage_path, order_index)")
-    .eq("featured", true)
-    .order("order_index", { ascending: true })
-    .limit(6);
-
-  const { data: skillsData } = await supabase
-    .from("skills")
-    .select("*")
-    .order("order_index", { ascending: true });
+  const [
+    { data: projectsData },
+    { data: skillsData },
+    { data: heroSettingData },
+  ] = await Promise.all([
+    supabase
+      .from("projects")
+      .select("*, project_categories(*), project_images(id, url, storage_path, order_index)")
+      .eq("featured", true)
+      .order("order_index", { ascending: true })
+      .limit(6),
+    supabase.from("skills").select("*").order("order_index", { ascending: true }),
+    supabase.from("site_settings").select("value").eq("key", "hero_image").single(),
+  ]);
 
   const projects = ((projectsData ?? []) as ProjectWithRelations[]).map((p) => ({
     ...p,
-    project_images: p.project_images ?? [],
+    project_images:     p.project_images     ?? [],
     project_categories: p.project_categories ?? { id: "", name: "—", order_index: 0 },
   }));
   const skills = (skillsData ?? []) as Skill[];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const heroImageUrl = (heroSettingData?.value as any)?.url ?? "";
+
   return (
     <>
-      {/* Hero — no parallax, always visible */}
-      <HeroSection />
+      <HeroSection heroImageUrl={heroImageUrl} />
 
-      {/* About — slide up from below */}
       <ParallaxSection direction="up" intensity={0.12} delay={0}>
         <AboutSection />
       </ParallaxSection>
 
-      {/* Skills — slide from right */}
       <ParallaxSection direction="left" intensity={0.1} delay={50}>
         <SkillsSection skills={skills} />
       </ParallaxSection>
 
-      {/* Projects — slide up */}
       <ParallaxSection direction="up" intensity={0.12} delay={0}>
         <ProjectsSection projects={projects} />
       </ParallaxSection>
 
-      {/* Contact — slide up with slight delay */}
       <ParallaxSection direction="up" intensity={0.08} delay={100}>
         <ContactSection />
       </ParallaxSection>
