@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { X, Upload } from "lucide-react";
 import type { ProjectImage } from "@/types/database";
+import { ImageEditor } from "@/components/admin/ImageEditor";
 
 interface ImageUploaderProps {
   projectId?: string;
@@ -23,10 +24,10 @@ export function ImageUploader({
   onDeleteExisting,
 }: ImageUploaderProps) {
   const [pendingPreviews, setPendingPreviews] = useState<PendingPreview[]>([]);
-  const [sizeError, setSizeError] = useState<string | null>(null);
+  const [sizeError, setSizeError]             = useState<string | null>(null);
+  const [editingFile, setEditingFile]         = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Cleanup preview URLs on unmount
   useEffect(() => {
     return () => {
       pendingPreviews.forEach((p) => URL.revokeObjectURL(p.previewUrl));
@@ -46,19 +47,35 @@ export function ImageUploader({
     }
 
     const valid = files.filter((f) => f.size <= 5 * 1024 * 1024);
-    const newPreviews: PendingPreview[] = valid.map((file) => ({
+    if (valid.length === 0) return;
+
+    // Buka editor untuk file pertama — jika ada lebih dari 1, queue sisanya
+    // (simpel: buka satu per satu)
+    if (valid.length === 1) {
+      setEditingFile(valid[0]);
+    } else {
+      // Multi file: langsung tambah tanpa editor
+      addFiles(valid);
+    }
+
+    if (inputRef.current) inputRef.current.value = "";
+  }
+
+  function addFiles(files: File[]) {
+    const newPreviews: PendingPreview[] = files.map((file) => ({
       file,
       previewUrl: URL.createObjectURL(file),
     }));
-
     setPendingPreviews((prev) => {
       const next = [...prev, ...newPreviews];
       onPendingFilesChange(next.map((p) => p.file));
       return next;
     });
+  }
 
-    // Reset input value so same file can be re-selected
-    if (inputRef.current) inputRef.current.value = "";
+  function handleEditorDone(result: File) {
+    setEditingFile(null);
+    addFiles([result]);
   }
 
   function removePending(index: number) {
@@ -76,6 +93,15 @@ export function ImageUploader({
   return (
     <div className="space-y-4">
       <label className={labelClass}>Gambar Project</label>
+
+      {/* Image editor modal */}
+      {editingFile && (
+        <ImageEditor
+          file={editingFile}
+          onDone={handleEditorDone}
+          onCancel={() => setEditingFile(null)}
+        />
+      )}
 
       {/* Existing images */}
       {existingImages.length > 0 && (
@@ -154,7 +180,7 @@ export function ImageUploader({
       </label>
 
       <p className="text-[11px] font-mono text-dark-700">
-        JPEG, PNG, WebP, GIF — maks. 5MB per file
+        JPEG, PNG, WebP, GIF — maks. 5MB · pilih 1 file untuk buka editor
       </p>
 
       {sizeError && (
