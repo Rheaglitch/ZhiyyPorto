@@ -3,6 +3,7 @@ import { AboutSection } from "@/components/sections/AboutSection";
 import { SkillsSection } from "@/components/sections/SkillsSection";
 import { ProjectsSection } from "@/components/sections/ProjectsSection";
 import { ContactSection } from "@/components/sections/ContactSection";
+import { ParallaxSection } from "@/components/layout/ParallaxSection";
 import { createClient } from "@/lib/supabase/server";
 import type { ProjectWithRelations, Skill } from "@/types/database";
 
@@ -21,7 +22,6 @@ export default async function Home() {
     .select("*")
     .order("order_index", { ascending: true });
 
-  // Pastikan project_images selalu array dan project_categories tidak null
   const projects = ((projectsData ?? []) as ProjectWithRelations[]).map((p) => ({
     ...p,
     project_images: p.project_images ?? [],
@@ -31,11 +31,28 @@ export default async function Home() {
 
   return (
     <>
+      {/* Hero — no parallax, always visible */}
       <HeroSection />
-      <AboutSection />
-      <SkillsSection skills={skills} />
-      <ProjectsSection projects={projects} />
-      <ContactSection />
+
+      {/* About — slide up from below */}
+      <ParallaxSection direction="up" intensity={0.12} delay={0}>
+        <AboutSection />
+      </ParallaxSection>
+
+      {/* Skills — slide from right */}
+      <ParallaxSection direction="left" intensity={0.1} delay={50}>
+        <SkillsSection skills={skills} />
+      </ParallaxSection>
+
+      {/* Projects — slide up */}
+      <ParallaxSection direction="up" intensity={0.12} delay={0}>
+        <ProjectsSection projects={projects} />
+      </ParallaxSection>
+
+      {/* Contact — slide up with slight delay */}
+      <ParallaxSection direction="up" intensity={0.08} delay={100}>
+        <ContactSection />
+      </ParallaxSection>
     </>
   );
 }

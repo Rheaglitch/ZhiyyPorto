@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ContentProtectionProvider } from "@/components/layout/ContentProtectionProvider";
 import { BackgroundEffects } from "@/components/layout/BackgroundEffects";
+import { ScrollProgress } from "@/components/layout/ScrollProgress";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-dark-950 text-dark-100 min-h-screen`}
       >
         <ContentProtectionProvider>
+          <ScrollProgress />
           <BackgroundEffects />
           {children}
         </ContentProtectionProvider>
