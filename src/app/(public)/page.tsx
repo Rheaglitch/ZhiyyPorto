@@ -10,20 +10,28 @@ import type { ProjectWithRelations, Skill } from "@/types/database";
 export default async function Home() {
   const supabase = await createClient();
 
-  const [
-    { data: projectsData },
-    { data: skillsData },
-    { data: heroSettingData },
-  ] = await Promise.all([
+  const [{ data: projectsData }, { data: skillsData }] = await Promise.all([
     supabase
       .from("projects")
       .select("*, project_categories(*), project_images(id, url, storage_path, order_index)")
       .eq("featured", true)
       .order("order_index", { ascending: true })
       .limit(6),
-    supabase.from("skills").select("*").order("order_index", { ascending: true }),
-    supabase.from("site_settings").select("value").eq("key", "hero_image").single(),
+    supabase
+      .from("skills")
+      .select("*")
+      .order("order_index", { ascending: true }),
   ]);
+
+  // Fetch hero image separately to avoid type inference issues
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const heroRes = await (supabase as any)
+    .from("site_settings")
+    .select("value")
+    .eq("key", "hero_image")
+    .single();
+
+  const heroImageUrl: string = heroRes?.data?.value?.url ?? "";
 
   const projects = ((projectsData ?? []) as ProjectWithRelations[]).map((p) => ({
     ...p,
@@ -31,9 +39,6 @@ export default async function Home() {
     project_categories: p.project_categories ?? { id: "", name: "—", order_index: 0 },
   }));
   const skills = (skillsData ?? []) as Skill[];
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const heroImageUrl = (heroSettingData?.value as any)?.url ?? "";
 
   return (
     <>
