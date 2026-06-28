@@ -1,41 +1,41 @@
-import { Code2, Coffee, Lightbulb, Rocket } from "lucide-react";
+import { Code2, Palette, Camera, Lightbulb } from "lucide-react";
 
 const stats = [
-  { label: "Projects Built", value: "10+" },
+  { label: "Projects",     value: "10+" },
   { label: "Technologies", value: "15+" },
-  { label: "Cups of Coffee", value: "∞" },
-  { label: "Lines of Code", value: "50k+" },
+  { label: "Design Tools", value: "5+"  },
+  { label: "Years Active", value: "3+"  },
 ];
 
 const traits = [
   {
     icon: Code2,
-    title: "Clean Code",
-    desc: "Nulis kode yang readable dan maintainable, bukan kode yang cuma jalan doang.",
+    title: "Web Development",
+    desc: "Next.js, TypeScript, Supabase — bikin web yang cepat, clean, dan beneran jalan.",
   },
   {
-    icon: Rocket,
-    title: "Performance First",
-    desc: "Setiap millisecond itu penting. Optimasi bukan afterthought, tapi habit.",
+    icon: Palette,
+    title: "Design & Illustration",
+    desc: "UI/UX dengan Figma, ilustrasi digital & tradisional, desain logo dan branding.",
+  },
+  {
+    icon: Camera,
+    title: "Visual Creative",
+    desc: "Animasi 2D, motion graphics, fotografi — storytelling lewat visual.",
   },
   {
     icon: Lightbulb,
     title: "Problem Solver",
     desc: "Senang ngulik masalah kompleks dan nyari solusi yang paling elegan.",
   },
-  {
-    icon: Coffee,
-    title: "Always Learning",
-    desc: "Tech landscape berubah cepat. Aku suka ngikutin dan eksplorasi yang baru.",
-  },
 ];
 
 export function AboutSection() {
   return (
-    <section id="about" className="py-24 px-6 bg-dark-950">
+    <section id="about" className="py-20 px-6 bg-dark-950">
       <div className="max-w-6xl mx-auto">
         {/* Section label */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-14">
           <span className="text-blood-600 font-mono text-sm tracking-widest uppercase">
             — About Me —
           </span>
@@ -44,56 +44,47 @@ export function AboutSection() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Text */}
-          <div className="space-y-5 text-dark-400 leading-relaxed">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-start">
+          {/* Text — 2 cols */}
+          <div className="lg:col-span-2 space-y-4 text-dark-400 leading-relaxed text-sm">
             <p>
-              Hai! Aku{" "}
-              <span className="text-blood-400 font-medium">Reavlenia Arezha</span>,
-              seorang full-stack developer yang passionate bikin web modern dan
-              performa tinggi.
+              Halo! Aku{" "}
+              <span className="text-blood-400 font-semibold">Reavlenia Arezha</span>
+              , seorang creative multidisiplin yang bergerak di dunia digital.
             </p>
             <p>
-              Aku mulai coding dari rasa penasaran, dan sekarang udah jadi hobi
-              sekaligus kerjaan. Stack utamaku seputar{" "}
-              <span className="text-dark-200">Next.js, TypeScript, dan Supabase</span>{" "}
-              — tapi aku selalu open buat eksplorasi teknologi baru.
+              Bukan cuma ngoding — aku juga bikin{" "}
+              <span className="text-dark-200">animasi 2D, desain logo, UI/UX</span>,
+              fotografi, dan ilustrasi. Aku percaya karya terbaik lahir dari
+              kombinasi logika dan estetika.
             </p>
             <p>
-              Selain ngejar deadline, aku juga suka contribute ke open source,
-              belajar hal-hal random di internet, dan sesekali nulis tentang
-              pengalaman coding.
+              Stack utamaku Next.js + TypeScript untuk dev, Figma + Adobe Suite
+              untuk desain, dan After Effects untuk animasi.
             </p>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 gap-4 pt-6">
+            <div className="grid grid-cols-2 gap-3 pt-4">
               {stats.map(({ label, value }) => (
-                <div
-                  key={label}
-                  className="card-dark rounded-lg p-4 text-center"
-                >
-                  <div className="text-2xl font-black text-gradient-blood">
-                    {value}
-                  </div>
-                  <div className="text-xs text-dark-500 font-mono mt-1">
-                    {label}
-                  </div>
+                <div key={label} className="card-dark rounded-lg p-4 text-center">
+                  <div className="text-2xl font-black text-gradient-blood">{value}</div>
+                  <div className="text-xs text-dark-600 font-mono mt-1">{label}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Traits grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Traits — 3 cols */}
+          <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
             {traits.map(({ icon: Icon, title, desc }) => (
               <div
                 key={title}
-                className="card-dark rounded-xl p-5 hover:border-blood-900 transition-colors group"
+                className="card-dark rounded-xl p-5 hover:border-blood-900 transition-all duration-200 group"
               >
-                <div className="w-10 h-10 rounded-lg bg-blood-950 border border-blood-900 flex items-center justify-center mb-4 group-hover:bg-blood-900 transition-colors">
-                  <Icon size={18} className="text-blood-400" />
+                <div className="w-9 h-9 rounded-lg bg-blood-950 border border-blood-900/60 flex items-center justify-center mb-3 group-hover:bg-blood-900/60 transition-colors">
+                  <Icon size={16} className="text-blood-400" />
                 </div>
-                <h3 className="font-semibold text-dark-100 mb-1">{title}</h3>
+                <h3 className="font-semibold text-dark-100 text-sm mb-1.5">{title}</h3>
                 <p className="text-xs text-dark-500 leading-relaxed">{desc}</p>
               </div>
             ))}
