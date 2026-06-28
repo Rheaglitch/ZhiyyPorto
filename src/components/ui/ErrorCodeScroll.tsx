@@ -65,9 +65,11 @@ export function ErrorCodeScroll() {
         right:  0,
         top:    0,
         bottom: 0,
-        width:  "52%",
-        maskImage:       "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
-        WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
+        left:   "45%",  // hanya area kanan — tidak overlap konten kiri
+        maskImage:       "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%), linear-gradient(to right, transparent 0%, black 15%, black 100%)",
+        WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%), linear-gradient(to right, transparent 0%, black 15%, black 100%)",
+        maskComposite:        "intersect",
+        WebkitMaskComposite:  "destination-in",
       }}
       aria-hidden="true"
     >
@@ -79,23 +81,23 @@ export function ErrorCodeScroll() {
         {doubled.map((line, i) => {
           const isMain    = i % 5 === 0;
           const isFatal   = line.startsWith("FATAL") || line.startsWith("CRITICAL") || line.startsWith("PANIC");
-          const baseAlpha = isMain ? 0.55 : 0.18;
+          const baseAlpha = isMain ? 0.65 : 0.22;
           const color     = isFatal
-            ? `rgba(220,30,30,${baseAlpha + 0.15})`
+            ? `rgba(220,30,30,${baseAlpha + 0.2})`
             : isMain
-            ? `rgba(180,60,60,${baseAlpha})`
-            : `rgba(140,80,80,${baseAlpha * 0.7})`;
+            ? `rgba(185,65,65,${baseAlpha})`
+            : `rgba(150,80,80,${baseAlpha * 0.75})`;
 
           return (
             <div
               key={i}
               className="font-mono leading-snug"
               style={{
-                fontSize:    isMain ? "13px" : "11px",
+                fontSize:    isMain ? "15px" : "12px",
                 color,
-                paddingLeft: `${(i % 3) * 24}px`,
-                marginBottom: isMain ? "6px" : "2px",
-                letterSpacing: "0.03em",
+                paddingLeft: `${(i % 3) * 20}px`,
+                marginBottom: isMain ? "8px" : "3px",
+                letterSpacing: "0.04em",
                 fontWeight:  isMain ? 700 : 400,
               }}
             >
