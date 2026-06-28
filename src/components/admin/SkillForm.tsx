@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin-client";
+import Image from "next/image";
 import type { Skill } from "@/types/database";
 
 interface SkillFormProps {
@@ -14,14 +15,14 @@ export function SkillForm({ skill }: SkillFormProps) {
   const isEdit = !!skill;
 
   const [form, setForm] = useState({
-    name: skill?.name ?? "",
-    category: skill?.category ?? "Frontend",
-    level: skill?.level ?? 80,
+    name:        skill?.name        ?? "",
+    category:    skill?.category    ?? "Frontend",
+    icon:        skill?.icon        ?? "",
     order_index: skill?.order_index ?? 0,
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error,   setError  ] = useState<string | null>(null);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -37,17 +38,15 @@ export function SkillForm({ skill }: SkillFormProps) {
 
     const supabase = createAdminClient();
     const payload = {
-      name: form.name,
-      category: form.category,
-      level: Number(form.level),
+      name:        form.name,
+      category:    form.category,
+      icon:        form.icon || null,
       order_index: Number(form.order_index),
+      level:       0, // field still exists in DB, set to 0
     };
 
     if (isEdit) {
-      const { error } = await supabase
-        .from("skills")
-        .update(payload)
-        .eq("id", skill.id);
+      const { error } = await supabase.from("skills").update(payload).eq("id", skill.id);
       if (error) { setError(error.message); setLoading(false); return; }
     } else {
       const { error } = await supabase.from("skills").insert(payload);
@@ -64,6 +63,7 @@ export function SkillForm({ skill }: SkillFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 max-w-md">
+      {/* Name */}
       <div>
         <label className={labelClass}>Nama Skill *</label>
         <input
@@ -76,6 +76,7 @@ export function SkillForm({ skill }: SkillFormProps) {
         />
       </div>
 
+      {/* Category */}
       <div>
         <label className={labelClass}>Category</label>
         <select
@@ -84,34 +85,48 @@ export function SkillForm({ skill }: SkillFormProps) {
           onChange={handleChange}
           className={inputClass}
         >
-          {["Frontend", "Backend", "Tools", "Mobile", "Other"].map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
+          {["Frontend", "Backend", "Tools", "Creative", "Mobile", "Other"].map((c) => (
+            <option key={c} value={c}>{c}</option>
           ))}
         </select>
       </div>
 
+      {/* Icon URL */}
       <div>
-        <label className={labelClass}>
-          Level — <span className="text-blood-500">{form.level}%</span>
-        </label>
+        <label className={labelClass}>Icon URL</label>
         <input
-          name="level"
-          type="range"
-          min={0}
-          max={100}
-          value={form.level}
+          name="icon"
+          type="url"
+          value={form.icon}
           onChange={handleChange}
-          className="w-full accent-blood-600 cursor-pointer"
+          placeholder="https://cdn.simpleicons.org/nextdotjs/ffffff"
+          className={inputClass}
         />
-        <div className="flex justify-between text-xs font-mono text-dark-700 mt-1">
-          <span>0</span>
-          <span>50</span>
-          <span>100</span>
-        </div>
+        <p className="text-[10px] text-dark-600 font-mono mt-1.5">
+          {`// Gunakan simpleicons.org — contoh: https://cdn.simpleicons.org/figma/F24E1E`}
+        </p>
+
+        {/* Icon preview */}
+        {form.icon && (
+          <div className="mt-3 flex items-center gap-3 p-3 rounded-lg bg-dark-900 border border-dark-800">
+            <div className="w-8 h-8 flex items-center justify-center shrink-0">
+              <Image
+                src={form.icon}
+                alt="preview"
+                width={32}
+                height={32}
+                className="w-7 h-7 object-contain"
+                unoptimized
+              />
+            </div>
+            <span className="text-xs text-dark-400 font-mono">
+              {form.name || "preview"}
+            </span>
+          </div>
+        )}
       </div>
 
+      {/* Order */}
       <div>
         <label className={labelClass}>Order Index</label>
         <input
