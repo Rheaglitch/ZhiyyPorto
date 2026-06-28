@@ -148,7 +148,7 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
         <span
           className="font-black leading-none whitespace-nowrap text-[22vw]"
           style={{
-            color: "rgba(155,21,21,0.08)",
+            color: "rgba(155,21,21,0.045)",
             letterSpacing: "-0.04em",
             transform: "translateX(-2%)",
           }}
@@ -184,17 +184,19 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
         {/* Top row — name */}
         <div className="flex items-center justify-between pt-2">
           <div>
-            <p className="font-mono text-[10px] text-blood-600 tracking-[0.25em] uppercase mb-0.5">
+            <p className="font-mono text-[10px] text-blood-600 tracking-[0.3em] uppercase mb-1">
               Creative Portfolio
             </p>
-            <p className="font-black text-xl text-dark-100 leading-none tracking-wide">
-              REAVLENIA AREZHA
+            <p className="font-black text-2xl md:text-3xl text-dark-100 leading-none tracking-widest">
+              REAVLENIA
+              <span className="text-blood-600 ml-1">·</span>
+              <span className="text-dark-400 font-bold"> AREZHA</span>
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-blood-900/40 bg-blood-950/30">
             <span className="w-1.5 h-1.5 rounded-full bg-blood-500 animate-pulse" />
-            <span className="text-[10px] font-mono text-blood-500 tracking-widest">
-              AVAILABLE
+            <span className="text-[10px] font-mono text-blood-400 tracking-widest">
+              OPEN TO WORK
             </span>
           </div>
         </div>
@@ -202,30 +204,31 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
         {/* Middle — roles on left side */}
         <div className="flex flex-col gap-0 max-w-xs">
           {/* Decorative line */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-px bg-blood-700" />
-            <span className="text-[10px] font-mono text-blood-700 tracking-widest uppercase">
-              Role
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-6 h-px bg-blood-700" />
+            <span className="text-[10px] font-mono text-blood-600 tracking-[0.2em] uppercase">
+              I am a
             </span>
           </div>
 
           <RoleTicker roles={displayRoles} />
 
-          <p className="mt-4 text-dark-500 text-sm leading-relaxed max-w-[260px]">
+          <p className="mt-5 text-dark-400 text-sm leading-relaxed max-w-[280px]">
             Menciptakan karya yang{" "}
-            <span className="text-blood-400">fungsional sekaligus indah</span>.
+            <span className="text-dark-200 font-medium">fungsional sekaligus indah</span>
+            {" "}— dari kode sampai kanvas.
           </p>
 
           <div className="flex items-center gap-3 mt-6">
             <Link
               href="/#projects"
-              className="px-5 py-2 rounded-full bg-blood-700 hover:bg-blood-600 text-white text-xs font-medium transition-all hover:shadow-lg hover:shadow-blood-900/40"
+              className="group relative px-6 py-2.5 rounded-full bg-blood-700 hover:bg-blood-600 text-white text-xs font-semibold tracking-wide transition-all duration-200 hover:shadow-lg hover:shadow-blood-900/50 hover:scale-105 active:scale-95"
             >
-              Lihat Karya
+              <span className="relative z-10">Lihat Karya →</span>
             </Link>
             <Link
               href="/#contact"
-              className="px-5 py-2 rounded-full border border-dark-700 hover:border-blood-700 text-dark-400 hover:text-blood-400 text-xs font-medium transition-all"
+              className="px-6 py-2.5 rounded-full border border-dark-700 hover:border-blood-600 text-dark-400 hover:text-blood-400 text-xs font-semibold tracking-wide transition-all duration-200 hover:scale-105 active:scale-95"
             >
               Kontak
             </Link>
@@ -233,24 +236,22 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
         </div>
 
         {/* Bottom row — social */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-5">
           {[
-            { label: "GitHub",    href: "https://github.com/Rheaglitch", short: "gh" },
-            { label: "Instagram", href: "https://instagram.com/",         short: "ig" },
-            { label: "LinkedIn",  href: "https://linkedin.com/",           short: "li" },
+            { label: "GitHub",    href: "https://github.com/Rheaglitch", short: "GitHub"    },
+            { label: "Instagram", href: "https://instagram.com/",         short: "Instagram" },
+            { label: "LinkedIn",  href: "https://linkedin.com/",           short: "LinkedIn"  },
           ].map(({ label, href, short }) => (
             <a
               key={label}
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center gap-1.5"
+              className="group flex items-center gap-1.5 py-1"
             >
-              <span className="font-mono text-[10px] text-dark-700 group-hover:text-blood-700 transition-colors uppercase">
-                {short}.
-              </span>
-              <span className="text-xs text-dark-500 group-hover:text-dark-200 transition-colors">
-                {label}
+              <span className="w-3 h-px bg-dark-700 group-hover:bg-blood-600 group-hover:w-5 transition-all duration-300" />
+              <span className="text-[11px] text-dark-500 group-hover:text-dark-100 font-mono transition-colors duration-200">
+                {short}
               </span>
             </a>
           ))}

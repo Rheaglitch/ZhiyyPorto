@@ -1,110 +1,202 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ScrollVein } from "@/components/layout/ScrollVein";
 
-// ─── Aurora Blobs (tetap sama) ───────────────────────────────────────────────
+// ─── 1. Aurora Blobs (opacity turun dari sebelumnya) ─────────────────────────
 function AuroraBlobs() {
   return (
     <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
-      <div
-        className="absolute rounded-full opacity-[0.12] blur-[120px]"
+      <div className="absolute rounded-full blur-[130px]"
         style={{
-          width: "600px", height: "600px",
-          background: "radial-gradient(circle, #7d1212 0%, #3d0808 60%, transparent 100%)",
-          top: "-100px", left: "-100px",
-          animation: "blob1 18s ease-in-out infinite",
+          width:"550px",height:"550px",opacity:0.07,
+          background:"radial-gradient(circle,#7d1212 0%,#3d0808 60%,transparent 100%)",
+          top:"-80px",left:"-80px",
+          animation:"blob1 20s ease-in-out infinite",
         }}
       />
-      <div
-        className="absolute rounded-full opacity-[0.09] blur-[140px]"
+      <div className="absolute rounded-full blur-[150px]"
         style={{
-          width: "700px", height: "700px",
-          background: "radial-gradient(circle, #9b1515 0%, #3d0808 55%, transparent 100%)",
-          bottom: "-150px", right: "-150px",
-          animation: "blob2 22s ease-in-out infinite",
-        }}
-      />
-      <div
-        className="absolute rounded-full opacity-[0.06] blur-[160px]"
-        style={{
-          width: "500px", height: "500px",
-          background: "radial-gradient(circle, #c81c1c 0%, transparent 70%)",
-          top: "40%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          animation: "blob3 28s ease-in-out infinite",
+          width:"650px",height:"650px",opacity:0.055,
+          background:"radial-gradient(circle,#9b1515 0%,#3d0808 55%,transparent 100%)",
+          bottom:"-120px",right:"-120px",
+          animation:"blob2 26s ease-in-out infinite",
         }}
       />
       <style>{`
-        @keyframes blob1 {
-          0%,100%{transform:translate(0,0) scale(1)}
-          25%{transform:translate(80px,60px) scale(1.08)}
-          50%{transform:translate(40px,120px) scale(0.95)}
-          75%{transform:translate(-40px,50px) scale(1.05)}
-        }
-        @keyframes blob2 {
-          0%,100%{transform:translate(0,0) scale(1)}
-          30%{transform:translate(-90px,-70px) scale(1.1)}
-          60%{transform:translate(-50px,-120px) scale(0.92)}
-          80%{transform:translate(30px,-60px) scale(1.06)}
-        }
-        @keyframes blob3 {
-          0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.06}
-          40%{transform:translate(-50%,-50%) scale(1.3);opacity:0.1}
-          70%{transform:translate(-50%,-50%) scale(0.85);opacity:0.05}
-        }
+        @keyframes blob1{0%,100%{transform:translate(0,0) scale(1)}
+          33%{transform:translate(70px,50px) scale(1.06)}
+          66%{transform:translate(-30px,100px) scale(0.96)}}
+        @keyframes blob2{0%,100%{transform:translate(0,0) scale(1)}
+          40%{transform:translate(-80px,-60px) scale(1.08)}
+          70%{transform:translate(-40px,-100px) scale(0.94)}}
       `}</style>
     </div>
   );
 }
 
-// ─── Blood Crack Trail ───────────────────────────────────────────────────────
-interface Crack {
-  x: number;
-  y: number;
-  branches: Branch[];
-  life: number;
-  maxLife: number;
+// ─── 2. Starfield — red-dark + grey particles ─────────────────────────────────
+function Starfield() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const W = () => window.innerWidth;
+    const H = () => window.innerHeight;
+    canvas.width  = W();
+    canvas.height = H();
+
+    const resize = () => { canvas.width = W(); canvas.height = H(); init(); };
+    window.addEventListener("resize", resize);
+
+    interface Star {
+      x: number; y: number;
+      size: number; opacity: number;
+      vx: number; vy: number;
+      color: string;
+      twinkleSpeed: number;
+      twinkleOffset: number;
+    }
+
+    let stars: Star[] = [];
+    let scrollY = 0;
+
+    const COLORS = [
+      "rgba(180,40,40,",   // blood red
+      "rgba(140,20,20,",   // dark red
+      "rgba(100,100,110,", // cool grey
+      "rgba(80,80,90,",    // dark grey
+      "rgba(200,60,60,",   // brighter red (rare)
+    ];
+
+    function init() {
+      const count = Math.floor((W() * H()) / 6000);
+      stars = Array.from({ length: count }, () => ({
+        x:             Math.random() * W(),
+        y:             Math.random() * H(),
+        size:          0.4 + Math.random() * 1.6,
+        opacity:       0.15 + Math.random() * 0.5,
+        vx:            (Math.random() - 0.5) * 0.12,
+        vy:            (Math.random() - 0.5) * 0.08,
+        color:         COLORS[Math.floor(Math.random() * COLORS.length)],
+        twinkleSpeed:  0.008 + Math.random() * 0.015,
+        twinkleOffset: Math.random() * Math.PI * 2,
+      }));
+    }
+
+    init();
+
+    let t = 0;
+    let rafId: number;
+    const onScroll = () => { scrollY = window.scrollY; };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    function draw() {
+      ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
+      t += 0.01;
+
+      // Scroll speed boost
+      const scrollBoost = Math.min(scrollY * 0.0003, 0.5);
+
+      for (const s of stars) {
+        s.x += s.vx * (1 + scrollBoost * 3);
+        s.y += s.vy * (1 + scrollBoost * 2);
+
+        // Wrap around
+        if (s.x < -2)                s.x = canvas!.width  + 2;
+        if (s.x > canvas!.width  + 2) s.x = -2;
+        if (s.y < -2)                s.y = canvas!.height + 2;
+        if (s.y > canvas!.height + 2) s.y = -2;
+
+        // Twinkle
+        const twinkle = 0.7 + 0.3 * Math.sin(t * s.twinkleSpeed * 80 + s.twinkleOffset);
+        const alpha   = s.opacity * twinkle;
+
+        // Draw star
+        ctx!.beginPath();
+        ctx!.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx!.fillStyle = s.color + alpha + ")";
+        ctx!.fill();
+
+        // Larger stars get a soft glow
+        if (s.size > 1.2) {
+          const g = ctx!.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size * 3);
+          g.addColorStop(0, s.color + (alpha * 0.4) + ")");
+          g.addColorStop(1, s.color + "0)");
+          ctx!.beginPath();
+          ctx!.arc(s.x, s.y, s.size * 3, 0, Math.PI * 2);
+          ctx!.fillStyle = g;
+          ctx!.fill();
+        }
+      }
+
+      rafId = requestAnimationFrame(draw);
+    }
+    draw();
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 z-0 pointer-events-none"
+      style={{ opacity: 0.85 }}
+      aria-hidden="true"
+    />
+  );
 }
 
+// ─── 3. Noise / Grain Texture overlay ────────────────────────────────────────
+function NoiseTexture() {
+  return (
+    <div
+      className="fixed inset-0 z-[1] pointer-events-none"
+      style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+        opacity: 0.025,
+        mixBlendMode: "overlay" as React.CSSProperties["mixBlendMode"],
+      }}
+      aria-hidden="true"
+    />
+  );
+}
+
+// ─── 4. Blood Crack Trail (cursor) ────────────────────────────────────────────
 interface Branch {
   points: { x: number; y: number }[];
   width: number;
 }
+interface CrackSystem {
+  x: number; y: number;
+  branches: Branch[];
+  life: number;
+}
 
-function generateCrack(
-  startX: number,
-  startY: number,
-  angle: number,
-  length: number,
-  depth: number
-): Branch[] {
+function genCrack(sx: number, sy: number, angle: number, len: number, depth: number): Branch[] {
   const branches: Branch[] = [];
-  const points: { x: number; y: number }[] = [];
-
-  let x = startX;
-  let y = startY;
-  let currentAngle = angle;
-  const segLen = 8 + Math.random() * 12;
-  const segments = Math.floor(length / segLen);
-
-  points.push({ x, y });
-
-  for (let i = 0; i < segments; i++) {
-    currentAngle += (Math.random() - 0.5) * 0.7;
-    x += Math.cos(currentAngle) * segLen;
-    y += Math.sin(currentAngle) * segLen;
-    points.push({ x, y });
-
-    // Random sub-branch
-    if (depth > 0 && Math.random() < 0.35) {
-      const branchAngle = currentAngle + (Math.random() - 0.5) * 1.8;
-      const subBranches = generateCrack(x, y, branchAngle, length * 0.5, depth - 1);
-      branches.push(...subBranches);
+  const pts: { x: number; y: number }[] = [{ x: sx, y: sy }];
+  let x = sx, y = sy, a = angle;
+  const seg = 9 + Math.random() * 11;
+  const n   = Math.floor(len / seg);
+  for (let i = 0; i < n; i++) {
+    a += (Math.random() - 0.5) * 0.65;
+    x += Math.cos(a) * seg;
+    y += Math.sin(a) * seg;
+    pts.push({ x, y });
+    if (depth > 0 && Math.random() < 0.3) {
+      const ba = a + (Math.random() - 0.5) * 1.8;
+      branches.push(...genCrack(x, y, ba, len * 0.45, depth - 1));
     }
   }
-
-  branches.unshift({ points, width: 1.5 - depth * 0.4 });
+  branches.unshift({ points: pts, width: 1.4 - depth * 0.35 });
   return branches;
 }
 
@@ -117,112 +209,67 @@ function BloodCrackTrail() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const resize = () => {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resize();
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
     window.addEventListener("resize", resize);
 
-    const cracks: Crack[] = [];
-    let lastX = -999;
-    let lastY = -999;
-    let rafId: number;
+    const cracks: CrackSystem[] = [];
+    let lastX = -999, lastY = -999, rafId: number;
 
-    const spawnCrack = (x: number, y: number) => {
-      const dist = Math.hypot(x - lastX, y - lastY);
-      if (dist < 18) return; // throttle by distance
-      lastX = x;
-      lastY = y;
-
-      const angle = Math.atan2(y - (lastY || y), x - (lastX || x));
-      const numCracks = 2 + Math.floor(Math.random() * 2);
-
-      for (let i = 0; i < numCracks; i++) {
-        const spreadAngle = angle + (Math.random() - 0.5) * 2.5;
-        const length = 30 + Math.random() * 50;
-        const branches = generateCrack(x, y, spreadAngle, length, 2);
-        cracks.push({
-          x, y,
-          branches,
-          life: 1,
-          maxLife: 0.8 + Math.random() * 0.6,
-        });
+    const spawn = (x: number, y: number) => {
+      if (Math.hypot(x - lastX, y - lastY) < 20) return;
+      lastX = x; lastY = y;
+      for (let i = 0; i < 2 + Math.floor(Math.random() * 2); i++) {
+        const a = Math.atan2(y - lastY, x - lastX) + (Math.random() - 0.5) * 2.8;
+        cracks.push({ x, y, branches: genCrack(x, y, a, 35 + Math.random() * 45, 2), life: 1 });
       }
-
-      // Keep max 40 crack systems
-      if (cracks.length > 40) cracks.splice(0, cracks.length - 40);
+      if (cracks.length > 35) cracks.splice(0, cracks.length - 35);
     };
 
-    const onMove = (e: MouseEvent) => spawnCrack(e.clientX, e.clientY);
-    const onTouch = (e: TouchEvent) => {
-      const t = e.touches[0];
-      if (t) spawnCrack(t.clientX, t.clientY);
-    };
+    const onMove  = (e: MouseEvent) => spawn(e.clientX, e.clientY);
+    const onTouch = (e: TouchEvent) => { const t = e.touches[0]; if (t) spawn(t.clientX, t.clientY); };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("touchmove", onTouch);
 
-    const drawBranch = (branch: Branch, alpha: number, glowAlpha: number) => {
-      if (branch.points.length < 2) return;
-
-      // Glow layer
+    const drawBranch = (b: Branch, a: number) => {
+      if (b.points.length < 2) return;
+      // glow
       ctx.save();
-      ctx.shadowBlur   = 8;
-      ctx.shadowColor  = `rgba(220, 30, 30, ${glowAlpha})`;
-      ctx.strokeStyle  = `rgba(180, 20, 20, ${alpha * 0.6})`;
-      ctx.lineWidth    = branch.width + 1;
-      ctx.lineCap      = "round";
-      ctx.lineJoin     = "round";
+      ctx.shadowBlur  = 7;
+      ctx.shadowColor = `rgba(220,30,30,${a*0.35})`;
+      ctx.strokeStyle = `rgba(170,15,15,${a*0.55})`;
+      ctx.lineWidth   = b.width + 0.8;
+      ctx.lineCap     = "round";
       ctx.beginPath();
-      ctx.moveTo(branch.points[0].x, branch.points[0].y);
-      for (let i = 1; i < branch.points.length; i++) {
-        ctx.lineTo(branch.points[i].x, branch.points[i].y);
-      }
+      ctx.moveTo(b.points[0].x, b.points[0].y);
+      b.points.slice(1).forEach((p) => ctx.lineTo(p.x, p.y));
       ctx.stroke();
       ctx.restore();
-
-      // Core crack line
+      // core
       ctx.save();
-      ctx.strokeStyle = `rgba(255, 60, 60, ${alpha})`;
-      ctx.lineWidth   = branch.width * 0.5;
+      ctx.strokeStyle = `rgba(240,50,50,${a*0.8})`;
+      ctx.lineWidth   = b.width * 0.45;
       ctx.lineCap     = "round";
-      ctx.lineJoin    = "round";
       ctx.beginPath();
-      ctx.moveTo(branch.points[0].x, branch.points[0].y);
-      for (let i = 1; i < branch.points.length; i++) {
-        ctx.lineTo(branch.points[i].x, branch.points[i].y);
-      }
+      ctx.moveTo(b.points[0].x, b.points[0].y);
+      b.points.slice(1).forEach((p) => ctx.lineTo(p.x, p.y));
       ctx.stroke();
       ctx.restore();
     };
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       for (let i = cracks.length - 1; i >= 0; i--) {
-        const crack = cracks[i];
-        crack.life -= 0.018;
-
-        if (crack.life <= 0) {
-          cracks.splice(i, 1);
-          continue;
-        }
-
-        const alpha     = crack.life * 0.9;
-        const glowAlpha = crack.life * 0.4;
-
-        for (const branch of crack.branches) {
-          drawBranch(branch, alpha, glowAlpha);
-        }
-
-        // Blood drip dot at origin
-        const dotAlpha = crack.life * 0.8;
+        const c = cracks[i];
+        c.life -= 0.016;
+        if (c.life <= 0) { cracks.splice(i, 1); continue; }
+        c.branches.forEach((b) => drawBranch(b, c.life));
         ctx.beginPath();
-        ctx.arc(crack.x, crack.y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(200, 20, 20, ${dotAlpha})`;
+        ctx.arc(c.x, c.y, 1.8, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(200,20,20,${c.life*0.7})`;
         ctx.fill();
       }
-
       rafId = requestAnimationFrame(animate);
     };
     animate();
@@ -235,20 +282,16 @@ function BloodCrackTrail() {
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 z-[1] pointer-events-none"
-      aria-hidden="true"
-    />
-  );
+  return <canvas ref={canvasRef} className="fixed inset-0 z-[2] pointer-events-none" aria-hidden="true" />;
 }
 
+// ─── Export ───────────────────────────────────────────────────────────────────
 export function BackgroundEffects() {
   return (
     <>
       <AuroraBlobs />
-      <ScrollVein />
+      <Starfield />
+      <NoiseTexture />
       <BloodCrackTrail />
     </>
   );
