@@ -6,6 +6,7 @@ import type { ProjectWithRelations } from "@/types/database";
 import { cn } from "@/lib/utils";
 import { ImageCarousel } from "@/components/ui/ImageCarousel";
 import { VideoModal } from "@/components/ui/VideoModal";
+import { GlitchReveal } from "@/components/ui/GlitchReveal";
 
 interface ProjectCardProps {
   project: ProjectWithRelations;
@@ -16,9 +17,10 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   return (
+    <GlitchReveal>
     <article
       className={cn(
-        "group card-dark rounded-xl overflow-hidden hover:border-blood-900 transition-all duration-300 flex flex-col",
+        "group card-dark rounded-xl overflow-hidden hover:border-blood-900 transition-all duration-300 flex flex-col h-full",
         className
       )}
     >
@@ -126,5 +128,6 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
         />
       )}
     </article>
+    </GlitchReveal>
   );
 }

@@ -7,6 +7,7 @@ import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { ChatBot } from "@/components/layout/ChatBot";
 import { FloatingActions } from "@/components/layout/FloatingActions";
+import { GlitchIntro } from "@/components/layout/GlitchIntro";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +48,7 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <ContentProtectionProvider>
+            <GlitchIntro />
             <ScrollProgress />
             <BackgroundEffects />
             {children}

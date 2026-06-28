@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Plus } from "lucide-react";
 import { ProjectCard } from "@/components/ui/ProjectCard";
+import { GlitchReveal } from "@/components/ui/GlitchReveal";
 import type { ProjectWithRelations } from "@/types/database";
 
 interface ProjectsSectionProps {
@@ -12,7 +13,7 @@ export function ProjectsSection({ projects }: ProjectsSectionProps) {
     <section id="projects" className="py-20 px-6" style={{ background: "var(--bg-primary)" }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+        <GlitchReveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
           <div>
             <span className="text-blood-600 font-mono text-sm tracking-widest uppercase">
               — Featured Work —
@@ -28,7 +29,7 @@ export function ProjectsSection({ projects }: ProjectsSectionProps) {
             Lihat semua karya
             <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
           </Link>
-        </div>
+        </GlitchReveal>
 
         {/* Grid */}
         {projects.length > 0 ? (

@@ -1,7 +1,89 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+
+// ─── Hero Photo — grayscale+blur default, color+sharp on hover ───────────────
+function HeroPhoto({ src }: { src: string }) {
+  const [hovered, setHovered] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  function handleMouseMove(e: React.MouseEvent) {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = ((e.clientX - rect.left) / rect.width)  * 100;
+    const y = ((e.clientY - rect.top)  / rect.height) * 100;
+    setMousePos({ x, y });
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative h-full w-full pointer-events-auto"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onMouseMove={handleMouseMove}
+    >
+      {/* Base photo — grayscale + blur when not hovered */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt="Reavlenia Arezha"
+        className="h-full w-full object-contain object-bottom object-right transition-all duration-700"
+        style={{
+          filter: hovered
+            ? "grayscale(0%) blur(0px)"
+            : "grayscale(100%) blur(2px)",
+        }}
+      />
+
+      {/* Focus window — clip-path spotlight on hover */}
+      {hovered && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-contain object-bottom object-right pointer-events-none transition-none"
+            style={{
+              filter: "grayscale(0%) blur(0px)",
+              clipPath: `circle(90px at ${mousePos.x}% ${mousePos.y}%)`,
+            }}
+          />
+          {/* Focus box + label */}
+          <div
+            className="absolute pointer-events-none border border-white/30 transition-none"
+            style={{
+              left:   `${mousePos.x}%`,
+              top:    `${mousePos.y}%`,
+              width:  "160px",
+              height: "100px",
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            {/* Corner marks */}
+            {["top-0 left-0", "top-0 right-0", "bottom-0 left-0", "bottom-0 right-0"].map((pos, i) => (
+              <span
+                key={i}
+                className={`absolute w-3 h-3 border-white/70 ${pos} ${
+                  i < 2 ? "border-t" : "border-b"
+                } ${i % 2 === 0 ? "border-l" : "border-r"}`}
+              />
+            ))}
+            {/* FOCUS label */}
+            <span
+              className="absolute -top-5 left-0 text-[9px] font-mono text-white/60 tracking-[0.3em] uppercase"
+            >
+              Focus
+            </span>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 // ─── Crescent Moon ────────────────────────────────────────────────────────────
 function Crescent() {
@@ -117,12 +199,7 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
         className="absolute z-[3] pointer-events-none select-none"
         style={{ right: 0, bottom: 0, height: "100%", width: "48%" }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={imageUrl}
-          alt="Reavlenia Arezha"
-          className="h-full w-full object-contain object-bottom object-right"
-        />
+        <HeroPhoto src={imageUrl} />
       </div>
 
       {/* ── UI layer ── */}
