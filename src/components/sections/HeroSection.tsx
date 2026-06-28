@@ -6,81 +6,85 @@ import { ErrorCodeScroll } from "@/components/ui/ErrorCodeScroll";
 
 // ─── Hero Photo — grayscale+blur default, color+sharp on hover ───────────────
 function HeroPhoto({ src }: { src: string }) {
-  const [hovered, setHovered] = useState(false);
+  const [hovered,  setHovered ] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const containerRef = useRef<HTMLDivElement>(null);
 
-  function handleMouseMove(e: React.MouseEvent) {
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const x = ((e.clientX - rect.left) / rect.width)  * 100;
-    const y = ((e.clientY - rect.top)  / rect.height) * 100;
+    const x = Math.round(((e.clientX - rect.left) / rect.width)  * 100);
+    const y = Math.round(((e.clientY - rect.top)  / rect.height) * 100);
     setMousePos({ x, y });
   }
 
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full pointer-events-auto"
+      className="relative h-full w-full"
+      style={{ cursor: "crosshair" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onMouseMove={handleMouseMove}
     >
-      {/* Base photo — grayscale + blur when not hovered */}
+      {/* Base — grayscale + blur */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt="Reavlenia Arezha"
-        className="h-full w-full object-contain object-bottom object-right transition-all duration-700"
+        className="absolute inset-0 h-full w-full object-contain object-bottom object-right"
         style={{
-          filter: hovered
-            ? "grayscale(0%) blur(0px)"
-            : "grayscale(100%) blur(2px)",
+          filter:     "grayscale(100%) blur(2.5px) brightness(0.85)",
+          transition: "filter 0.5s ease",
         }}
       />
 
-      {/* Focus window — clip-path spotlight on hover */}
+      {/* Hover layer — full color, sharp, clipped to circle around cursor */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full object-contain object-bottom object-right"
+        style={{
+          filter:     "grayscale(0%) blur(0px) brightness(1)",
+          clipPath:   hovered
+            ? `circle(85px at ${mousePos.x}% ${mousePos.y}%)`
+            : "circle(0px at 50% 50%)",
+          transition: "clip-path 0.15s ease",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Focus box — follows cursor */}
       {hovered && (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={src}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full object-contain object-bottom object-right pointer-events-none transition-none"
-            style={{
-              filter: "grayscale(0%) blur(0px)",
-              clipPath: `circle(90px at ${mousePos.x}% ${mousePos.y}%)`,
-            }}
-          />
-          {/* Focus box + label */}
-          <div
-            className="absolute pointer-events-none border border-white/30 transition-none"
-            style={{
-              left:   `${mousePos.x}%`,
-              top:    `${mousePos.y}%`,
-              width:  "160px",
-              height: "100px",
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            {/* Corner marks */}
-            {["top-0 left-0", "top-0 right-0", "bottom-0 left-0", "bottom-0 right-0"].map((pos, i) => (
-              <span
-                key={i}
-                className={`absolute w-3 h-3 border-white/70 ${pos} ${
-                  i < 2 ? "border-t" : "border-b"
-                } ${i % 2 === 0 ? "border-l" : "border-r"}`}
-              />
-            ))}
-            {/* FOCUS label */}
-            <span
-              className="absolute -top-5 left-0 text-[9px] font-mono text-white/60 tracking-[0.3em] uppercase"
-            >
-              Focus
-            </span>
-          </div>
-        </>
+        <div
+          className="absolute pointer-events-none z-10"
+          style={{
+            left:      `calc(${mousePos.x}% - 80px)`,
+            top:       `calc(${mousePos.y}% - 50px)`,
+            width:     "160px",
+            height:    "100px",
+            border:    "1px solid rgba(255,255,255,0.35)",
+            boxShadow: "inset 0 0 20px rgba(155,21,21,0.15)",
+            transition: "left 0.08s ease, top 0.08s ease",
+          }}
+        >
+          {/* Corner TL */}
+          <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-white/70" />
+          {/* Corner TR */}
+          <span className="absolute top-0 right-0 w-3 h-3 border-t border-r border-white/70" />
+          {/* Corner BL */}
+          <span className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-white/70" />
+          {/* Corner BR */}
+          <span className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-white/70" />
+          {/* FOCUS label */}
+          <span className="absolute -top-5 left-0 text-[9px] font-mono tracking-[0.3em] text-white/50 uppercase">
+            Focus
+          </span>
+          {/* Crosshair center */}
+          <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 border border-blood-500/60 rounded-full" />
+        </div>
       )}
     </div>
   );
