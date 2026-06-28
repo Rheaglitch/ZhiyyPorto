@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ContentProtectionProvider } from "@/components/layout/ContentProtectionProvider";
+import { BackgroundEffects } from "@/components/layout/BackgroundEffects";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,6 +42,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-dark-950 text-dark-100 min-h-screen`}
       >
         <ContentProtectionProvider>
+          <BackgroundEffects />
           {children}
         </ContentProtectionProvider>
       </body>
