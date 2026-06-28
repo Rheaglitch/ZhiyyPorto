@@ -4,6 +4,9 @@ import "./globals.css";
 import { ContentProtectionProvider } from "@/components/layout/ContentProtectionProvider";
 import { BackgroundEffects } from "@/components/layout/BackgroundEffects";
 import { ScrollProgress } from "@/components/layout/ScrollProgress";
+import { ThemeProvider } from "@/components/layout/ThemeProvider";
+import { ChatBot } from "@/components/layout/ChatBot";
+import { FloatingActions } from "@/components/layout/FloatingActions";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,11 +45,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-dark-950 text-dark-100 min-h-screen`}
       >
-        <ContentProtectionProvider>
-          <ScrollProgress />
-          <BackgroundEffects />
-          {children}
-        </ContentProtectionProvider>
+        <ThemeProvider>
+          <ContentProtectionProvider>
+            <ScrollProgress />
+            <BackgroundEffects />
+            {children}
+            <FloatingActions />
+            <ChatBot />
+          </ContentProtectionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

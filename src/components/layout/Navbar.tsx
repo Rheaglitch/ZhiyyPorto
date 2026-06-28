@@ -7,57 +7,60 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/#about", label: "About" },
-  { href: "/#skills", label: "Skills" },
+  { href: "/#about",    label: "About"    },
+  { href: "/#skills",   label: "Skills"   },
   { href: "/#projects", label: "Projects" },
-  { href: "/projects", label: "All Work" },
-  { href: "/#contact", label: "Contact" },
+  { href: "/projects",  label: "All Work" },
+  { href: "/#contact",  label: "Contact"  },
 ];
 
 export function Navbar() {
-  const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
+  const pathname  = usePathname();
+  const [isOpen,   setIsOpen]   = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const isHome = pathname === "/";
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => {
+      // Threshold = hero height (100vh) minus navbar height (~56px)
+      setScrolled(window.scrollY > window.innerHeight - 60);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // On homepage: start at bottom of hero, transition to top after scroll
+  // On other pages: always sticky top
+  const isBottom = isHome && !scrolled;
 
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        scrolled
-          ? "bg-dark-950/90 backdrop-blur-md border-b border-dark-800"
-          : "bg-transparent"
+        "fixed z-50 left-0 right-0 transition-all duration-500",
+        isBottom
+          ? "bottom-0 top-auto bg-dark-950/80 backdrop-blur-md border-t border-dark-800/60"
+          : "top-0 bottom-auto bg-[var(--bg-primary)]/90 backdrop-blur-md border-b border-[var(--border)]"
       )}
     >
-      <nav className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <nav className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link
           href="/"
-          className="font-mono font-bold text-xl text-dark-100 hover:text-blood-500 transition-colors"
+          className="font-mono font-bold text-lg text-dark-100 hover:text-blood-500 transition-colors shrink-0"
         >
           <span className="text-blood-600">&lt;</span>
           Zhiyy
           <span className="text-blood-600">/&gt;</span>
         </Link>
 
-        {/* Desktop nav */}
-        <ul className="hidden md:flex items-center gap-8">
+        {/* Desktop links */}
+        <ul className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
             <li key={link.href}>
               <Link
                 href={link.href}
-                className={cn(
-                  "text-sm font-mono transition-colors hover:text-blood-400",
-                  pathname === link.href
-                    ? "text-blood-500"
-                    : "text-dark-400"
-                )}
+                className="text-xs font-mono text-dark-400 hover:text-blood-400 transition-colors tracking-wide"
               >
                 {link.label}
               </Link>
@@ -65,47 +68,44 @@ export function Navbar() {
           ))}
         </ul>
 
-        {/* CTA button desktop */}
+        {/* Right side: Hire Me */}
         <Link
           href="/#contact"
-          className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blood-700 hover:bg-blood-600 text-white text-sm font-medium transition-colors"
+          className="hidden md:inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blood-700 hover:bg-blood-600 text-white text-xs font-medium transition-colors"
         >
           Hire Me
         </Link>
 
-        {/* Mobile hamburger */}
+        {/* Mobile toggle */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden text-dark-300 hover:text-blood-400 transition-colors"
+          className="md:hidden text-dark-400 hover:text-blood-400 transition-colors"
           aria-label="Toggle menu"
         >
-          {isOpen ? <X size={22} /> : <Menu size={22} />}
+          {isOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </nav>
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="md:hidden bg-dark-950/95 backdrop-blur-md border-b border-dark-800 px-6 pb-6">
-          <ul className="flex flex-col gap-4 pt-2">
+        <div className="md:hidden bg-[var(--bg-primary)]/95 backdrop-blur-md border-t border-[var(--border)] px-6 pb-5 pt-3">
+          <ul className="flex flex-col gap-3">
             {navLinks.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className={cn(
-                    "block text-sm font-mono py-2 transition-colors hover:text-blood-400",
-                    pathname === link.href ? "text-blood-500" : "text-dark-400"
-                  )}
+                  className="block text-sm font-mono py-1.5 text-dark-400 hover:text-blood-400 transition-colors"
                 >
                   {link.label}
                 </Link>
               </li>
             ))}
-            <li>
+            <li className="pt-1">
               <Link
                 href="/#contact"
                 onClick={() => setIsOpen(false)}
-                className="inline-flex w-full justify-center items-center gap-2 px-4 py-2 rounded-md bg-blood-700 hover:bg-blood-600 text-white text-sm font-medium transition-colors"
+                className="flex justify-center px-4 py-2 rounded-full bg-blood-700 hover:bg-blood-600 text-white text-sm font-medium transition-colors"
               >
                 Hire Me
               </Link>

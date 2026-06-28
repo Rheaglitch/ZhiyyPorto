@@ -1,10 +1,10 @@
-import { HeroSection } from "@/components/sections/HeroSection";
-import { AboutSection } from "@/components/sections/AboutSection";
-import { SkillsSection } from "@/components/sections/SkillsSection";
+import { HeroSection }     from "@/components/sections/HeroSection";
+import { AboutSection }    from "@/components/sections/AboutSection";
+import { SkillsSection }   from "@/components/sections/SkillsSection";
 import { ProjectsSection } from "@/components/sections/ProjectsSection";
-import { ContactSection } from "@/components/sections/ContactSection";
+import { ContactSection }  from "@/components/sections/ContactSection";
 import { ParallaxSection } from "@/components/layout/ParallaxSection";
-import { createClient } from "@/lib/supabase/server";
+import { createClient }    from "@/lib/supabase/server";
 import type { ProjectWithRelations, Skill } from "@/types/database";
 
 export default async function Home() {
@@ -17,21 +17,17 @@ export default async function Home() {
       .eq("featured", true)
       .order("order_index", { ascending: true })
       .limit(6),
-    supabase
-      .from("skills")
-      .select("*")
-      .order("order_index", { ascending: true }),
+    supabase.from("skills").select("*").order("order_index", { ascending: true }),
   ]);
 
-  // Fetch hero image separately to avoid type inference issues
+  // Fetch settings separately (avoid TS never issue)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const heroRes = await (supabase as any)
-    .from("site_settings")
-    .select("value")
-    .eq("key", "hero_image")
-    .single();
+  const sb = supabase as any;
+  const heroRes  = await sb.from("site_settings").select("value").eq("key", "hero_image").single();
+  const rolesRes = await sb.from("site_settings").select("value").eq("key", "hero_roles").single();
 
-  const heroImageUrl: string = heroRes?.data?.value?.url ?? "";
+  const heroImageUrl: string   = heroRes?.data?.value?.url    ?? "";
+  const heroRoles:    string[] = rolesRes?.data?.value?.roles ?? [];
 
   const projects = ((projectsData ?? []) as ProjectWithRelations[]).map((p) => ({
     ...p,
@@ -42,7 +38,7 @@ export default async function Home() {
 
   return (
     <>
-      <HeroSection heroImageUrl={heroImageUrl} />
+      <HeroSection heroImageUrl={heroImageUrl} roles={heroRoles} />
 
       <ParallaxSection direction="up" intensity={0.12} delay={0}>
         <AboutSection />

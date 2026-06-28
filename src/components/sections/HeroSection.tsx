@@ -1,313 +1,259 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
-// ─── Crescent Moon SVG yang mengecil saat scroll ──────────────────────────
-function ScrollCrescent() {
-  const [scale, setScale]     = useState(1);
-  const [opacity, setOpacity] = useState(1);
-  const [cracked, setCracked] = useState(false);
-  const crackedRef            = useRef(false);
-  const canvasRef             = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const onScroll = () => {
-      const progress = Math.min(window.scrollY / (window.innerHeight * 0.6), 1);
-      const newScale = 1 - progress * 0.75;
-      setScale(newScale);
-      setOpacity(1 - progress * 1.2);
-
-      // Trigger crack at 70% scroll
-      if (progress > 0.7 && !crackedRef.current) {
-        crackedRef.current = true;
-        setCracked(true);
-        spawnVeins();
-      }
-      if (progress < 0.1 && crackedRef.current) {
-        crackedRef.current = false;
-        setCracked(false);
-        clearVeins();
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Spawn vein effect on canvas when crescent "cracks"
-  function spawnVeins() {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    // Center of crescent (approx center of hero)
-    const cx = window.innerWidth  / 2;
-    const cy = window.innerHeight * 0.45;
-
-    let progress = 0;
-    const branches: { x: number; y: number; angle: number; len: number; width: number; life: number }[] = [];
-
-    // Generate random vein branches from center
-    for (let i = 0; i < 12; i++) {
-      const angle = (Math.PI * 2 * i) / 12 + (Math.random() - 0.5) * 0.5;
-      branches.push({
-        x: cx, y: cy,
-        angle,
-        len: 80 + Math.random() * 200,
-        width: 1 + Math.random() * 2.5,
-        life: 1,
-      });
-    }
-
-    function draw() {
-      if (!ctx || !canvas) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      progress = Math.min(progress + 0.03, 1);
-
-      for (const b of branches) {
-        const drawn = progress;
-        const ex = b.x + Math.cos(b.angle) * b.len * drawn;
-        const ey = b.y + Math.sin(b.angle) * b.len * drawn;
-
-        // Sub branches
-        if (drawn > 0.5 && b.len > 100) {
-          for (let s = 0; s < 2; s++) {
-            const sa = b.angle + (Math.random() - 0.5) * 1.4;
-            const sl = b.len * 0.4;
-            const sx = b.x + Math.cos(b.angle) * b.len * 0.5;
-            const sy = b.y + Math.sin(b.angle) * b.len * 0.5;
-            const sub_progress = (drawn - 0.5) * 2;
-            ctx.beginPath();
-            ctx.moveTo(sx, sy);
-            ctx.lineTo(sx + Math.cos(sa) * sl * sub_progress, sy + Math.sin(sa) * sl * sub_progress);
-            ctx.strokeStyle = `rgba(120, 8, 8, ${b.life * 0.5})`;
-            ctx.lineWidth   = b.width * 0.4;
-            ctx.lineCap     = "round";
-            ctx.stroke();
-          }
-        }
-
-        // Dark base
-        ctx.beginPath();
-        ctx.moveTo(b.x, b.y);
-        ctx.lineTo(ex, ey);
-        ctx.strokeStyle = `rgba(20, 0, 0, ${b.life * 0.8})`;
-        ctx.lineWidth   = b.width * 1.6;
-        ctx.lineCap     = "round";
-        ctx.stroke();
-
-        // Red main
-        ctx.beginPath();
-        ctx.moveTo(b.x, b.y);
-        ctx.lineTo(ex, ey);
-        ctx.strokeStyle = `rgba(160, 12, 12, ${b.life * 0.85})`;
-        ctx.lineWidth   = b.width;
-        ctx.lineCap     = "round";
-        ctx.stroke();
-
-        // Glow core
-        ctx.beginPath();
-        ctx.moveTo(b.x, b.y);
-        ctx.lineTo(ex, ey);
-        ctx.strokeStyle = `rgba(220, 40, 40, ${b.life * 0.4})`;
-        ctx.lineWidth   = b.width * 0.3;
-        ctx.lineCap     = "round";
-        ctx.stroke();
-      }
-
-      if (progress < 1) requestAnimationFrame(draw);
-    }
-    draw();
-  }
-
-  function clearVeins() {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
-
+// ─── Crescent Moon (static, behind photo) ────────────────────────────────────
+function Crescent() {
   return (
-    <>
-      {/* Vein canvas — appears on crack */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 pointer-events-none z-[3]"
-        aria-hidden="true"
-      />
-
-      {/* Crescent moon */}
-      <div
-        className="absolute left-1/2 top-[38%] -translate-x-1/2 -translate-y-1/2 z-[2] pointer-events-none select-none"
-        style={{
-          transform: `translate(-50%, -50%) scale(${scale})`,
-          opacity:    Math.max(0, opacity),
-          transition: "none",
-          filter:     cracked ? "blur(2px)" : "none",
-        }}
-        aria-hidden="true"
+    <div
+      className="absolute right-[5%] top-1/2 -translate-y-1/2 pointer-events-none select-none z-[2]"
+      aria-hidden="true"
+    >
+      <svg
+        viewBox="0 0 400 400"
+        width="520"
+        height="520"
+        xmlns="http://www.w3.org/2000/svg"
       >
-        <svg
-          viewBox="0 0 200 200"
-          width="320"
-          height="320"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            <radialGradient id="crescent-glow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%"   stopColor="#c81c1c" stopOpacity="0.9" />
-              <stop offset="60%"  stopColor="#7d1212" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#3d0808" stopOpacity="0" />
-            </radialGradient>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="4" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
+        <defs>
+          <radialGradient id="cg1" cx="40%" cy="40%" r="60%">
+            <stop offset="0%"   stopColor="#c81c1c" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#3d0808" stopOpacity="0"    />
+          </radialGradient>
+          <filter id="cglow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="10" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id="csoft" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="6" />
+          </filter>
+        </defs>
 
-          {/* Glow halo */}
-          <circle cx="105" cy="100" r="90" fill="url(#crescent-glow)" opacity="0.3" />
+        {/* Soft glow halo behind crescent */}
+        <ellipse cx="210" cy="200" rx="160" ry="155" fill="url(#cg1)" />
 
-          {/* Crescent shape — outer minus inner circle offset */}
-          <path
-            d="M 100,20
-               A 80,80 0 1 1 100,180
-               A 55,55 0 1 0 100,20 Z"
-            fill="#8b1010"
-            filter="url(#glow)"
-            opacity="0.95"
-          />
-          {/* Brighter inner edge */}
-          <path
-            d="M 100,30
-               A 70,70 0 1 1 100,170
-               A 48,48 0 1 0 100,30 Z"
-            fill="none"
-            stroke="#c82020"
-            strokeWidth="1.5"
-            opacity="0.6"
-          />
-        </svg>
-      </div>
-    </>
+        {/* Outer soft glow */}
+        <path
+          d="M 200,30 A 170,170 0 1 1 200,370 A 120,120 0 1 0 200,30 Z"
+          fill="#4a0808"
+          filter="url(#csoft)"
+          opacity="0.5"
+        />
+
+        {/* Main crescent — dark base */}
+        <path
+          d="M 200,45 A 155,155 0 1 1 200,355 A 108,108 0 1 0 200,45 Z"
+          fill="#1a0303"
+          filter="url(#cglow)"
+        />
+
+        {/* Mid layer — deep red */}
+        <path
+          d="M 200,55 A 145,145 0 1 1 200,345 A 100,100 0 1 0 200,55 Z"
+          fill="#5a0d0d"
+        />
+
+        {/* Top layer — blood red */}
+        <path
+          d="M 200,65 A 135,135 0 1 1 200,335 A 92,92 0 1 0 200,65 Z"
+          fill="#8b1010"
+          opacity="0.9"
+        />
+
+        {/* Bright inner edge highlight */}
+        <path
+          d="M 200,75 A 125,125 0 1 1 200,325 A 86,86 0 1 0 200,75 Z"
+          fill="none"
+          stroke="#c82020"
+          strokeWidth="2"
+          opacity="0.5"
+        />
+
+        {/* Rim glow — outermost */}
+        <path
+          d="M 200,45 A 155,155 0 1 1 200,355 A 108,108 0 1 0 200,45 Z"
+          fill="none"
+          stroke="#ff3030"
+          strokeWidth="1.5"
+          opacity="0.2"
+        />
+      </svg>
+    </div>
   );
 }
 
-// ─── Hero Section ────────────────────────────────────────────────────────────
-interface HeroSectionProps {
-  heroImageUrl?: string;
+// ─── Role Ticker ──────────────────────────────────────────────────────────────
+function RoleTicker({ roles }: { roles: string[] }) {
+  const [index,   setIndex]   = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    if (roles.length <= 1) return;
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setIndex((prev) => (prev + 1) % roles.length);
+        setVisible(true);
+      }, 400);
+    }, 2800);
+    return () => clearInterval(interval);
+  }, [roles]);
+
+  const current = roles[index] ?? "";
+
+  return (
+    <div className="overflow-hidden">
+      <span
+        className="block font-black uppercase text-4xl md:text-5xl lg:text-6xl leading-none text-dark-100 transition-all duration-400"
+        style={{
+          opacity:   visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(12px)",
+          transition: "opacity 0.4s ease, transform 0.4s ease",
+        }}
+      >
+        {current}
+      </span>
+    </div>
+  );
 }
 
-// Fallback jika Supabase belum ada data hero_image
-const HERO_IMAGE_URL = "https://zljhjdhknybktcvtdutz.supabase.co/storage/v1/object/public/hero/ab9e4d158163df3ee068613735669b04-removebg-preview.png";
+// ─── Hero Section ─────────────────────────────────────────────────────────────
+interface HeroSectionProps {
+  heroImageUrl?: string;
+  roles?: string[];
+}
 
-export function HeroSection({ heroImageUrl }: HeroSectionProps) {
-  const imageUrl = heroImageUrl || HERO_IMAGE_URL;
+const FALLBACK_IMAGE = "https://zljhjdhknybktcvtdutz.supabase.co/storage/v1/object/public/hero/ab9e4d158163df3ee068613735669b04-removebg-preview.png";
+const FALLBACK_ROLES = ["Web Dev", "Animator", "Designer", "Illustrator"];
+
+export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
+  const imageUrl    = heroImageUrl || FALLBACK_IMAGE;
+  const displayRoles = (roles && roles.length > 0) ? roles : FALLBACK_ROLES;
 
   return (
     <section
       id="home"
-      className="relative min-h-screen overflow-hidden bg-dark-950"
+      className="relative min-h-screen overflow-hidden"
+      style={{ background: "var(--bg-primary)" }}
     >
-      {/* ── Magazine text layer (behind photo) ── */}
-      <div className="absolute inset-0 z-[1] flex items-center justify-center pointer-events-none select-none overflow-hidden">
+      {/* ── "Portfolio" big text — layer 1 ── */}
+      <div
+        className="absolute inset-0 z-[1] flex items-center overflow-hidden pointer-events-none select-none"
+        aria-hidden="true"
+      >
         <span
-          className="font-black uppercase leading-none tracking-tighter text-[18vw] text-blood-950/40"
-          style={{ letterSpacing: "-0.04em" }}
-          aria-hidden="true"
+          className="font-black leading-none whitespace-nowrap text-[22vw]"
+          style={{
+            color: "rgba(155,21,21,0.08)",
+            letterSpacing: "-0.04em",
+            transform: "translateX(-2%)",
+          }}
         >
           Portfolio
         </span>
       </div>
 
-      {/* ── Crescent + vein canvas ── */}
-      <ScrollCrescent />
+      {/* ── Crescent — layer 2, behind photo ── */}
+      <Crescent />
 
-      {/* ── Photo layer (above background text, below UI) ── */}
-      <div className="absolute inset-0 z-[4] flex items-end justify-center pointer-events-none">
-        {imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imageUrl}
-            alt="Reavlenia Arezha"
-            className="h-[90%] w-auto object-contain object-bottom"
-            style={{ maxWidth: "480px" }}
-          />
-        ) : (
-          /* Placeholder outline when no photo */
-          <div className="h-[85%] w-[320px] border border-dashed border-dark-700 rounded-t-full flex items-center justify-center">
-            <span className="text-dark-700 font-mono text-xs">upload foto</span>
-          </div>
-        )}
+      {/* ── Photo — layer 3 ── */}
+      <div
+        className="absolute z-[3] pointer-events-none"
+        style={{
+          right: "4%",
+          bottom: 0,
+          height: "92%",
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imageUrl}
+          alt="Reavlenia Arezha"
+          className="h-full w-auto object-contain object-bottom"
+          style={{ maxWidth: "460px" }}
+        />
       </div>
 
-      {/* ── UI layer — role labels & CTA ── */}
-      <div className="relative z-[5] min-h-screen flex flex-col justify-between px-8 md:px-16 py-8 pointer-events-none">
-        {/* Top — role left + name right */}
-        <div className="flex items-start justify-between w-full pt-20">
-          {/* Left roles */}
-          <div className="flex flex-col gap-1 pointer-events-auto">
-            {["Web Dev", "Animator", "Designer"].map((role) => (
-              <span
-                key={role}
-                className="font-black uppercase text-2xl md:text-3xl leading-none text-dark-100"
-              >
-                {role}
-              </span>
-            ))}
-          </div>
+      {/* ── UI layer — layer 4 ── */}
+      <div className="relative z-[4] min-h-screen flex flex-col justify-between pb-16 pt-6 px-8 md:px-14">
 
-          {/* Right — name */}
-          <div className="text-right pointer-events-auto">
-            <p className="font-mono text-xs text-blood-600 tracking-widest uppercase mb-1">
-              Reavlenia
+        {/* Top row — name */}
+        <div className="flex items-center justify-between pt-2">
+          <div>
+            <p className="font-mono text-[10px] text-blood-600 tracking-[0.25em] uppercase mb-0.5">
+              Creative Portfolio
             </p>
-            <p className="font-black text-2xl md:text-3xl text-dark-100 leading-none">
-              AREZHA
+            <p className="font-black text-xl text-dark-100 leading-none tracking-wide">
+              REAVLENIA AREZHA
             </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-blood-500 animate-pulse" />
+            <span className="text-[10px] font-mono text-blood-500 tracking-widest">
+              AVAILABLE
+            </span>
           </div>
         </div>
 
-        {/* Bottom — social + CTA */}
-        <div className="flex items-end justify-between w-full pb-4">
-          {/* Social links */}
-          <div className="flex flex-col gap-1 pointer-events-auto">
-            <div className="flex items-center gap-2">
-              <span className="text-dark-600 font-mono text-[10px]">Inst.</span>
-              <span className="text-dark-400 text-xs font-mono">@reavlenia</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-dark-600 font-mono text-[10px]">Git.</span>
-              <span className="text-dark-400 text-xs font-mono">Rheaglitch</span>
-            </div>
+        {/* Middle — roles on left side */}
+        <div className="flex flex-col gap-0 max-w-xs">
+          {/* Decorative line */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-px bg-blood-700" />
+            <span className="text-[10px] font-mono text-blood-700 tracking-widest uppercase">
+              Role
+            </span>
           </div>
 
-          {/* CTA */}
-          <div className="flex flex-col items-end gap-3 pointer-events-auto">
-            <div className="flex items-center gap-1 mb-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-blood-500 animate-pulse" />
-              <span className="text-[10px] font-mono text-blood-500">Available</span>
-            </div>
-            <Link
-              href="/#contact"
-              className="px-6 py-2.5 rounded-full bg-blood-700 hover:bg-blood-600 text-white text-sm font-medium transition-all hover:shadow-lg hover:shadow-blood-900/40"
-            >
-              Hire Me
-            </Link>
+          <RoleTicker roles={displayRoles} />
+
+          <p className="mt-4 text-dark-500 text-sm leading-relaxed max-w-[260px]">
+            Menciptakan karya yang{" "}
+            <span className="text-blood-400">fungsional sekaligus indah</span>.
+          </p>
+
+          <div className="flex items-center gap-3 mt-6">
             <Link
               href="/#projects"
-              className="text-xs font-mono text-dark-500 hover:text-dark-300 transition-colors"
+              className="px-5 py-2 rounded-full bg-blood-700 hover:bg-blood-600 text-white text-xs font-medium transition-all hover:shadow-lg hover:shadow-blood-900/40"
             >
-              lihat karya ↓
+              Lihat Karya
+            </Link>
+            <Link
+              href="/#contact"
+              className="px-5 py-2 rounded-full border border-dark-700 hover:border-blood-700 text-dark-400 hover:text-blood-400 text-xs font-medium transition-all"
+            >
+              Kontak
             </Link>
           </div>
+        </div>
+
+        {/* Bottom row — social */}
+        <div className="flex items-center gap-6">
+          {[
+            { label: "GitHub",    href: "https://github.com/Rheaglitch", short: "gh" },
+            { label: "Instagram", href: "https://instagram.com/",         short: "ig" },
+            { label: "LinkedIn",  href: "https://linkedin.com/",           short: "li" },
+          ].map(({ label, href, short }) => (
+            <a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-1.5"
+            >
+              <span className="font-mono text-[10px] text-dark-700 group-hover:text-blood-700 transition-colors uppercase">
+                {short}.
+              </span>
+              <span className="text-xs text-dark-500 group-hover:text-dark-200 transition-colors">
+                {label}
+              </span>
+            </a>
+          ))}
         </div>
       </div>
     </section>
