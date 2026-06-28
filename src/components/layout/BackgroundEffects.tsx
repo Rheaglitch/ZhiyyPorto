@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { ScrollVein } from "@/components/layout/ScrollVein";
 
 // ─── Aurora Blobs (tetap sama) ───────────────────────────────────────────────
 function AuroraBlobs() {
@@ -247,6 +248,7 @@ export function BackgroundEffects() {
   return (
     <>
       <AuroraBlobs />
+      <ScrollVein />
       <BloodCrackTrail />
     </>
   );
