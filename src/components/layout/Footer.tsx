@@ -10,7 +10,7 @@ const socials = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-dark-800 bg-dark-950 py-12 px-6">
+    <footer className="border-t py-12 px-6" style={{ background: "var(--bg-primary)", borderColor: "var(--border)" }}>
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         {/* Brand */}
         <div>

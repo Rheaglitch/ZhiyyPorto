@@ -29,7 +29,7 @@ const contacts = [
 
 export function ContactSection() {
   return (
-    <section id="contact" className="py-20 px-6 bg-[#0d0d0d]">
+    <section id="contact" className="py-20 px-6" style={{ background: "var(--section-alt)" }}>
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center mb-14">

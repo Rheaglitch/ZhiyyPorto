@@ -32,7 +32,7 @@ const traits = [
 
 export function AboutSection() {
   return (
-    <section id="about" className="py-20 px-6 bg-dark-950">
+    <section id="about" className="py-20 px-6" style={{ background: "var(--bg-primary)" }}>
       <div className="max-w-6xl mx-auto">
         {/* Section label */}
         <div className="text-center mb-14">

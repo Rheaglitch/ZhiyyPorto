@@ -6,69 +6,76 @@
 :root,
 [data-theme="dark"] {
   --bg-primary:    #0a0a0a;
-  --bg-secondary:  #111111;
+  --bg-secondary:  #0f0f0f;
   --bg-card:       #141414;
-  --bg-card-hover: #1a1a1a;
-  --text-primary:  #e7e7e7;
-  --text-secondary:#a0a0a0;
-  --text-muted:    #555555;
-  --border:        #222222;
-  --border-hover:  #2a2a2a;
+  --bg-card-hover: #1c1c1c;
+  --text-primary:  #e8e8e8;
+  --text-secondary:#999999;
+  --text-muted:    #505050;
+  --border:        #1e1e1e;
+  --border-hover:  #2c2c2c;
   --blood-primary: #9b1515;
   --blood-dark:    #3d0808;
+  --section-alt:   #0d0d0d;
 }
 
-/* ── Light mode ── */
+/* ── Light mode — warm cream, red branding stays ── */
 [data-theme="light"] {
-  --bg-primary:    #f5f0f0;
-  --bg-secondary:  #ede6e6;
-  --bg-card:       #ffffff;
-  --bg-card-hover: #fdf5f5;
-  --text-primary:  #1a0a0a;
-  --text-secondary:#4a3030;
-  --text-muted:    #8a6060;
-  --border:        #e0d0d0;
-  --border-hover:  #c8a8a8;
+  --bg-primary:    #f2ebe8;
+  --bg-secondary:  #e8ddd9;
+  --bg-card:       #faf6f4;
+  --bg-card-hover: #f5eeeb;
+  --text-primary:  #1c1010;
+  --text-secondary:#4a2a2a;
+  --text-muted:    #7a5555;
+  --border:        #d8c8c4;
+  --border-hover:  #c0a8a4;
   --blood-primary: #9b1515;
   --blood-dark:    #3d0808;
+  --section-alt:   #ede5e1;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
+* { box-sizing: border-box; padding: 0; margin: 0; }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
-main {
-  position: relative;
-  z-index: 2;
-}
+main  { position: relative; z-index: 2; }
+header, footer { position: relative; z-index: 10; }
 
-header, footer {
-  position: relative;
-  z-index: 10;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 5px; }
+/* Scrollbar */
+::-webkit-scrollbar       { width: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg-secondary); }
 ::-webkit-scrollbar-thumb { background: #9b1515; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #c81c1c; }
 
-::selection { background: rgba(155,21,21,0.4); color: #fff; }
+::selection { background: rgba(155,21,21,0.35); color: #fff; }
+
+/* Light mode — fix stark white backgrounds in components */
+[data-theme="light"] section  { background-color: var(--bg-primary) !important; }
+[data-theme="light"] .bg-\[#0d0d0d\] { background-color: var(--section-alt) !important; }
+[data-theme="light"] .bg-dark-950 { background-color: var(--bg-primary) !important; }
+[data-theme="light"] .bg-\[#0a0a0a\] { background-color: var(--bg-primary) !important; }
+[data-theme="light"] .bg-dark-900 { background-color: var(--bg-secondary) !important; }
+[data-theme="light"] .bg-dark-900\/60 { background-color: rgba(232,221,217,0.6) !important; }
+[data-theme="light"] .bg-dark-900\/20 { background-color: rgba(232,221,217,0.2) !important; }
+[data-theme="light"] .bg-dark-900\/30 { background-color: rgba(232,221,217,0.3) !important; }
+[data-theme="light"] .text-dark-100  { color: var(--text-primary)   !important; }
+[data-theme="light"] .text-dark-200  { color: var(--text-primary)   !important; }
+[data-theme="light"] .text-dark-300  { color: var(--text-secondary) !important; }
+[data-theme="light"] .text-dark-400  { color: var(--text-secondary) !important; }
+[data-theme="light"] .text-dark-500  { color: var(--text-muted)     !important; }
+[data-theme="light"] .text-dark-600  { color: var(--text-muted)     !important; }
+[data-theme="light"] .border-dark-800 { border-color: var(--border) !important; }
+[data-theme="light"] .border-dark-700 { border-color: var(--border-hover) !important; }
+[data-theme="light"] .border-dark-900 { border-color: var(--border) !important; }
 
 @layer utilities {
   .text-gradient-blood {
@@ -77,13 +84,47 @@ header, footer {
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
   .card-dark {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    transition: border-color 0.2s ease, background-color 0.3s ease;
+    transition: border-color 0.2s ease, background-color 0.35s ease;
   }
   .card-dark:hover {
     border-color: var(--border-hover);
     background: var(--bg-card-hover);
   }
+}
+
+/* ── Animated gradient background ── */
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%;   }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%;   }
+}
+
+.animated-gradient-bg {
+  background: linear-gradient(
+    135deg,
+    #0a0a0a 0%,
+    #150303 25%,
+    #0a0a0a 50%,
+    #1a0505 75%,
+    #0a0a0a 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+}
+
+[data-theme="light"] .animated-gradient-bg {
+  background: linear-gradient(
+    135deg,
+    #f2ebe8 0%,
+    #f0ddd8 25%,
+    #f2ebe8 50%,
+    #eddad5 75%,
+    #f2ebe8 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
 }

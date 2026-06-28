@@ -33,7 +33,7 @@ export function SkillsSection({ skills }: SkillsSectionProps) {
   const categories = [...new Set(displaySkills.map((s) => s.category))];
 
   return (
-    <section id="skills" className="py-20 px-6 bg-[#0d0d0d]">
+    <section id="skills" className="py-20 px-6" style={{ background: "var(--section-alt)" }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-14">
