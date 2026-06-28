@@ -63,15 +63,16 @@ function RoleTicker({ roles }: { roles: string[] }) {
   }, [roles]);
 
   return (
-    <div className="overflow-hidden" style={{ minHeight: "1.1em" }}>
+    <div className="overflow-hidden" style={{ minHeight: "2.4em" }}>
       <span
-        className="block font-black uppercase leading-none text-dark-100"
+        className="block font-black uppercase leading-tight text-dark-100"
         style={{
-          fontSize:   "clamp(2rem, 5vw, 3.5rem)",
+          fontSize:   "clamp(1.6rem, 3.5vw, 2.8rem)",
           opacity:    visible ? 1 : 0,
-          transform:  visible ? "translateY(0)" : "translateY(10px)",
+          transform:  visible ? "translateY(0)" : "translateY(8px)",
           transition: "opacity 0.35s ease, transform 0.35s ease",
-          whiteSpace: "nowrap",
+          wordBreak:  "break-word",
+          maxWidth:   "100%",
         }}
       >
         {roles[index] ?? ""}
@@ -114,14 +115,13 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
       {/* ── Photo — right side ── */}
       <div
         className="absolute z-[3] pointer-events-none select-none"
-        style={{ right: 0, bottom: 0, height: "100%", maxWidth: "50%" }}
+        style={{ right: 0, bottom: 0, height: "100%", width: "48%" }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}
           alt="Reavlenia Arezha"
-          className="h-full w-auto object-contain object-bottom object-right"
-          style={{ maxWidth: "460px" }}
+          className="h-full w-full object-contain object-bottom object-right"
         />
       </div>
 
@@ -148,7 +148,7 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
         </div>
 
         {/* ── MIDDLE: role + stats + CTA ── */}
-        <div className="flex flex-col gap-6 max-w-sm">
+        <div className="flex flex-col gap-6 max-w-md pr-4">
           {/* Role */}
           <div>
             <div className="flex items-center gap-3 mb-3">
