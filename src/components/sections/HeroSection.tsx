@@ -204,17 +204,17 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
 
       {/* ── Photo — right side ── */}
       <div
-        className="absolute z-[3] select-none"
-        style={{ right: 0, bottom: 0, height: "100%", width: "48%", cursor: "none" }}
+        className="absolute z-[5] select-none"
+        style={{ right: 0, bottom: 0, height: "100%", width: "48%" }}
       >
         <HeroPhoto src={imageUrl} />
       </div>
 
       {/* ── UI layer ── */}
-      <div className="relative z-[4] min-h-screen flex flex-col justify-between px-8 md:px-14 pb-20 pt-8">
+      <div className="relative z-[4] min-h-screen flex flex-col justify-between px-8 md:px-14 pb-20 pt-8 pointer-events-none">
 
         {/* ── TOP: name + badge ── */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between pointer-events-auto">
           <div>
             <p className="font-mono text-[10px] text-blood-600 tracking-[0.3em] uppercase mb-2">
               Creative Portfolio
@@ -233,7 +233,7 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
         </div>
 
         {/* ── MIDDLE: role + stats + CTA ── */}
-        <div className="flex flex-col gap-6 max-w-md pr-4">
+        <div className="flex flex-col gap-6 max-w-md pr-4 pointer-events-auto">
           {/* Role */}
           <div>
             <div className="flex items-center gap-3 mb-3">
@@ -275,7 +275,7 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
         </div>
 
         {/* ── BOTTOM: social links ── */}
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-5 pointer-events-auto">
           {[
             { label: "GitHub",    href: "https://github.com/Rheaglitch" },
             { label: "Instagram", href: "https://instagram.com/"        },
