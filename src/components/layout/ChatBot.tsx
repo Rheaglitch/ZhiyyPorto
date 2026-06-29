@@ -10,21 +10,53 @@ interface Message {
 }
 
 const BOT_REPLIES: Record<string, string> = {
-  default:     "Halo! Ada yang bisa aku bantu? Kamu bisa tanya soal project, skill, atau cara kontak Reavlenia 😊",
-  halo:        "Halo! Senang bisa ngobrol sama kamu 👋",
-  hi:          "Hi! Ada yang mau ditanyakan? 😊",
-  project:     "Reavlenia punya berbagai project — web development, animasi 2D, desain UI/UX, dan ilustrasi. Cek section Projects di atas!",
-  skill:       "Skill Reavlenia meliputi Next.js, TypeScript, React, Figma, After Effects, Photoshop, dan banyak lagi. Cek section Skills!",
-  kontak:      "Kamu bisa kontak Reavlenia via email ohmyliinnn@gmail.com atau scroll ke bawah ke section Contact 📬",
-  hire:        "Tertarik hire Reavlenia? Scroll ke section Contact atau klik tombol Hire Me di navbar! 🎉",
-  animasi:     "Reavlenia bisa bikin animasi 2D, motion graphics, dan character animation. Cek portfolio untuk contoh karyanya!",
-  design:      "Reavlenia juga seorang designer — UI/UX dengan Figma, desain logo, dan branding. Lihat project untuk detailnya!",
+  default:      "Halo! Aku asisten Zhiyy. Tanya apa saja soal portfolio ini — project, skill, kontak, atau cara hire Reavlenia 😊",
+  halo:         "Halo! Senang bisa ngobrol sama kamu 👋 Ada yang bisa aku bantu?",
+  hi:           "Hi! Ada yang mau ditanyakan? 😊",
+  hello:        "Hello! Aku di sini untuk membantu kamu mengenal Reavlenia lebih jauh!",
+  project:      "Reavlenia punya berbagai project — web development, animasi 2D, desain UI/UX, dan ilustrasi. Scroll ke section Projects atau klik 'All Work' di navbar!",
+  skill:        "Reavlenia menguasai Next.js, TypeScript, React, Figma, After Effects, Photoshop, Illustrator, dan banyak lagi. Cek section Skills untuk detail!",
+  kontak:       "Kamu bisa kontak Reavlenia via email ohmyliinnn@gmail.com atau scroll ke section Contact di bawah halaman ini 📬",
+  contact:      "Untuk kontak, scroll ke bawah ke section Let's Connect atau email ke ohmyliinnn@gmail.com 📬",
+  hire:         "Tertarik hire Reavlenia? Klik tombol 'Hire Me' di navbar atau scroll ke Contact section! 🎉",
+  price:        "Untuk informasi harga/rate, langsung hubungi Reavlenia via email ohmyliinnn@gmail.com atau DM Instagram.",
+  harga:        "Untuk informasi harga, hubungi langsung via email atau Instagram ya!",
+  animasi:      "Reavlenia bisa bikin animasi 2D, motion graphics, dan character animation. Cek portfolio di section Projects!",
+  animation:    "Reavlenia handles 2D animation, motion graphics, and character animation. Check the Projects section!",
+  design:       "Reavlenia juga seorang designer — UI/UX dengan Figma, desain logo, branding, dan ilustrasi digital.",
+  logo:         "Ya, Reavlenia juga bikin desain logo dan branding! Hubungi langsung untuk request.",
+  web:          "Reavlenia membangun web dengan Next.js, TypeScript, Tailwind CSS, dan Supabase sebagai backend.",
+  website:      "Web development menggunakan Next.js 15, TypeScript, Tailwind CSS, dan Supabase. Cek Projects untuk contoh!",
+  portfolio:    "Ini adalah portfolio Reavlenia Arezha — seorang multidisciplinary creative dari Indonesia 🇮🇩",
+  reavlenia:    "Reavlenia Arezha adalah seorang creative multidisciplinary — web developer, animator, illustrator, dan UI/UX designer dari Indonesia.",
+  indonesia:    "Reavlenia berbasis di Indonesia 🇮🇩 dan terbuka untuk project remote dari mana saja!",
+  remote:       "Reavlenia terbuka untuk kerja remote! Hubungi untuk diskusi lebih lanjut.",
+  available:    "Reavlenia currently available for work! Klik Hire Me di navbar atau scroll ke Contact 🟢",
+  instagram:    "Instagram Reavlenia bisa ditemukan di footer atau Contact section halaman ini.",
+  github:       "GitHub Reavlenia: github.com/Rheaglitch — bisa cek repo public di sana!",
+  figma:        "Reavlenia menggunakan Figma untuk semua pekerjaan UI/UX design. Mau lihat hasil desainnya? Cek Projects!",
+  photoshop:    "Ya, Reavlenia menggunakan Adobe Photoshop dan Illustrator untuk ilustrasi dan editing foto.",
+  terima:       "Terima kasih sudah mengunjungi portfolio ini! 🙏",
+  makasih:      "Sama-sama! Ada lagi yang mau ditanyakan? 😊",
+  thanks:       "You're welcome! Feel free to ask anything else 😊",
+  bagus:        "Terima kasih! Reavlenia selalu berusaha memberikan yang terbaik 💪",
 };
 
 function getBotReply(input: string): string {
-  const lower = input.toLowerCase();
+  const lower = input.toLowerCase().trim();
+  // Check exact keyword matches first
   for (const [key, reply] of Object.entries(BOT_REPLIES)) {
     if (key !== "default" && lower.includes(key)) return reply;
+  }
+  // Partial match fallback
+  if (lower.includes("buat") || lower.includes("bikin") || lower.includes("minta")) {
+    return "Untuk request project atau karya, hubungi Reavlenia langsung via email ohmyliinnn@gmail.com atau scroll ke Contact section! 📩";
+  }
+  if (lower.includes("berapa") || lower.includes("cost") || lower.includes("budget")) {
+    return "Untuk informasi biaya/rate, langsung hubungi Reavlenia via email atau DM Instagram ya! 💬";
+  }
+  if (lower.includes("lama") || lower.includes("waktu") || lower.includes("deadline")) {
+    return "Durasi project tergantung scope-nya. Diskusikan langsung dengan Reavlenia untuk estimasi waktu yang akurat!";
   }
   return BOT_REPLIES.default;
 }
@@ -147,6 +179,21 @@ export function ChatBot() {
               >
                 {msg.text}
               </div>
+            ))}
+          </div>
+
+          {/* Quick replies */}
+          <div className="flex flex-wrap gap-1.5 px-3 pt-1 pb-2 border-t border-[var(--border)]">
+            {["Project", "Hire Me", "Skill", "Kontak"].map(q => (
+              <button key={q} onClick={() => {
+                const msg: Message = { role: "user", text: q };
+                const bot: Message = { role: "bot",  text: getBotReply(q) };
+                setMsgs(prev => [...prev, msg, bot]);
+                setTimeout(() => messagesRef.current?.scrollTo({ top: 999999, behavior: "smooth" }), 50);
+              }}
+                className="px-2.5 py-1 rounded-full text-[10px] font-mono border border-[var(--border)] bg-[var(--bg-secondary)] text-dark-400 hover:border-blood-700 hover:text-blood-400 transition-colors">
+                {q}
+              </button>
             ))}
           </div>
 

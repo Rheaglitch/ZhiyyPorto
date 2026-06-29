@@ -2,16 +2,22 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, FolderOpen, Wrench, LogOut, ExternalLink, FileText, Eye } from "lucide-react";
+import {
+  LayoutDashboard, FolderOpen, Wrench, LogOut, ExternalLink,
+  FileText, Eye, Settings, Shield, Music
+} from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin-client";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/zhaorukou/dashboard",          label: "Dashboard", icon: LayoutDashboard, exact: true  },
-  { href: "/zhaorukou/dashboard/content",  label: "Content",   icon: FileText,        exact: false },
-  { href: "/zhaorukou/dashboard/projects", label: "Projects",  icon: FolderOpen,      exact: false },
-  { href: "/zhaorukou/dashboard/skills",   label: "Skills",    icon: Wrench,          exact: false },
-  { href: "/zhaorukou/dashboard/preview",  label: "Preview",   icon: Eye,             exact: false },
+  { href: "/zhaorukou/dashboard",                   label: "Dashboard",  icon: LayoutDashboard, exact: true  },
+  { href: "/zhaorukou/dashboard/content",           label: "Content",    icon: FileText,        exact: false },
+  { href: "/zhaorukou/dashboard/projects",          label: "Projects",   icon: FolderOpen,      exact: false },
+  { href: "/zhaorukou/dashboard/skills",            label: "Skills",     icon: Wrench,          exact: false },
+  { href: "/zhaorukou/dashboard/music",             label: "Music",      icon: Music,           exact: false },
+  { href: "/zhaorukou/dashboard/protection",        label: "Protection", icon: Shield,          exact: false },
+  { href: "/zhaorukou/dashboard/settings",          label: "Settings",   icon: Settings,        exact: false },
+  { href: "/zhaorukou/dashboard/preview",           label: "Preview",    icon: Eye,             exact: false },
 ];
 
 export function AdminSidebar() {
