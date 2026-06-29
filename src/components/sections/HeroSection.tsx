@@ -142,66 +142,110 @@ function HeroContent({ roles, compact = false }: { roles: string[]; compact?: bo
     { label: "LinkedIn",  href: "https://linkedin.com/"         },
   ];
 
+  if (compact) {
+    // Mobile — simple stacked
+    return (
+      <div className="flex flex-col gap-4 h-full justify-between">
+        <div className="flex flex-col gap-3">
+          <div>
+            <p className="font-mono text-[10px] text-blood-600 tracking-[0.3em] uppercase mb-1.5">Creative Portfolio</p>
+            <h1 className="font-black leading-none tracking-tight">
+              <span className="block text-2xl text-dark-100">REAVLENIA</span>
+              <span className="block text-2xl text-dark-500 font-bold">AREZHA</span>
+            </h1>
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="w-4 h-px bg-blood-700" />
+              <span className="text-[9px] font-mono text-blood-600 tracking-[0.2em] uppercase">I am a</span>
+            </div>
+            <RoleTicker roles={roles} />
+          </div>
+          <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            Menciptakan karya yang{" "}
+            <span className="font-medium" style={{ color: "var(--text-primary)" }}>fungsional sekaligus indah</span>.
+          </p>
+          <div className="flex items-center gap-2">
+            <StatPill value="10+" label="Projects" />
+            <StatPill value="3+"  label="Years"    />
+            <StatPill value="5+"  label="Skills"   />
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/#projects" className="px-4 py-2 rounded-full bg-blood-700 hover:bg-blood-600 text-white text-xs font-semibold transition-all">
+              Lihat Karya →
+            </Link>
+            <Link href="/#contact" className="px-4 py-2 rounded-full border border-dark-700 text-dark-400 text-xs font-semibold transition-all">
+              Kontak
+            </Link>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          {socials.map(({ label, href }) => (
+            <a key={label} href={href} target="_blank" rel="noopener noreferrer"
+              className="text-[10px] text-dark-600 hover:text-dark-300 font-mono transition-colors">{label}</a>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop — distributed top/middle/bottom
   return (
-    <>
-      {/* Name */}
-      <div className={compact ? "mb-3" : "mb-0"}>
-        <p className="font-mono text-[10px] text-blood-600 tracking-[0.3em] uppercase mb-1.5">
-          Creative Portfolio
-        </p>
+    <div className="flex flex-col justify-between h-full min-h-screen py-4 gap-0">
+      {/* TOP — name */}
+      <div>
+        <p className="font-mono text-[10px] text-blood-600 tracking-[0.3em] uppercase mb-2">Creative Portfolio</p>
         <h1 className="font-black leading-none tracking-tight">
-          <span className={`block text-dark-100 ${compact ? "text-2xl" : "text-3xl lg:text-4xl xl:text-5xl"}`}>REAVLENIA</span>
-          <span className={`block text-dark-500 font-bold mt-0.5 ${compact ? "text-2xl" : "text-3xl lg:text-4xl xl:text-5xl"}`}>AREZHA</span>
+          <span className="block text-dark-100" style={{ fontSize: "clamp(1.8rem, 3.5vw, 3rem)" }}>REAVLENIA</span>
+          <span className="block text-dark-500 font-bold" style={{ fontSize: "clamp(1.8rem, 3.5vw, 3rem)" }}>AREZHA</span>
         </h1>
       </div>
 
-      {/* Role */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-4 h-px bg-blood-700" />
-          <span className="text-[9px] font-mono text-blood-600 tracking-[0.2em] uppercase">I am a</span>
+      {/* MIDDLE — role, bio, stats, CTA */}
+      <div className="flex flex-col gap-4 lg:gap-5">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-4 h-px bg-blood-700" />
+            <span className="text-[10px] font-mono text-blood-600 tracking-[0.2em] uppercase">I am a</span>
+          </div>
+          <RoleTicker roles={roles} />
         </div>
-        <RoleTicker roles={roles} />
+
+        <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+          Menciptakan karya yang{" "}
+          <span className="font-medium" style={{ color: "var(--text-primary)" }}>fungsional sekaligus indah</span>
+          {" "}— dari kode sampai kanvas.
+        </p>
+
+        <div className="flex items-center gap-2 lg:gap-3">
+          <StatPill value="10+" label="Projects"    />
+          <StatPill value="3+"  label="Years"       />
+          <StatPill value="5+"  label="Disciplines" />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Link href="/#projects"
+            className="px-5 py-2.5 rounded-full bg-blood-700 hover:bg-blood-600 text-white text-xs font-semibold tracking-wide transition-all hover:scale-105 active:scale-95 hover:shadow-lg hover:shadow-blood-900/40">
+            Lihat Karya →
+          </Link>
+          <Link href="/#contact"
+            className="px-5 py-2.5 rounded-full border border-dark-700 hover:border-blood-600 text-dark-400 hover:text-blood-400 text-xs font-semibold transition-all hover:scale-105 active:scale-95">
+            Kontak
+          </Link>
+        </div>
       </div>
 
-      {/* Bio */}
-      <p className={`leading-relaxed ${compact ? "text-xs" : "text-sm"}`}
-        style={{ color: "var(--text-secondary)" }}>
-        Menciptakan karya yang{" "}
-        <span className="font-medium" style={{ color: "var(--text-primary)" }}>fungsional sekaligus indah</span>
-        {" "}— dari kode sampai kanvas.
-      </p>
-
-      {/* Stats */}
-      <div className="flex items-center gap-2">
-        <StatPill value="10+" label="Projects"    />
-        <StatPill value="3+"  label="Years"       />
-        <StatPill value="5+"  label="Disciplines" />
-      </div>
-
-      {/* CTA */}
-      <div className="flex items-center gap-3">
-        <Link href="/#projects"
-          className={`rounded-full bg-blood-700 hover:bg-blood-600 text-white font-semibold tracking-wide transition-all hover:scale-105 active:scale-95 ${compact ? "px-4 py-2 text-xs" : "px-5 lg:px-6 py-2 lg:py-2.5 text-xs"}`}>
-          Lihat Karya →
-        </Link>
-        <Link href="/#contact"
-          className={`rounded-full border border-dark-700 hover:border-blood-600 text-dark-400 hover:text-blood-400 font-semibold transition-all hover:scale-105 active:scale-95 ${compact ? "px-4 py-2 text-xs" : "px-5 lg:px-6 py-2 lg:py-2.5 text-xs"}`}>
-          Kontak
-        </Link>
-      </div>
-
-      {/* Socials */}
+      {/* BOTTOM — socials */}
       <div className="flex items-center gap-4 lg:gap-5">
         {socials.map(({ label, href }) => (
           <a key={label} href={href} target="_blank" rel="noopener noreferrer"
             className="group flex items-center gap-1.5">
             <span className="w-3 h-px bg-dark-700 group-hover:bg-blood-600 group-hover:w-5 transition-all duration-300" />
-            <span className={`text-dark-500 group-hover:text-dark-200 font-mono transition-colors ${compact ? "text-[10px]" : "text-xs"}`}>{label}</span>
+            <span className="text-xs text-dark-500 group-hover:text-dark-200 font-mono transition-colors">{label}</span>
           </a>
         ))}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -221,7 +265,7 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
   return (
     <section id="home" className="relative overflow-hidden animated-gradient-bg min-h-screen w-full max-w-full">
 
-      {/* Error code scroll — desktop only */}
+      {/* Error code scroll — desktop only, behind photo */}
       <div className="hidden md:block">
         <ErrorCodeScroll />
       </div>
@@ -238,20 +282,26 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
       {/* ═══ DESKTOP (≥ 768px) ═══
           Content left + photo right */}
       <div className="hidden md:block">
-        {/* Photo */}
+        {/* Photo — center-right, not touching right edge */}
         <div className="absolute z-[5] select-none"
-          style={{ right: 0, bottom: 0, height: "100%", width: "clamp(260px, 46%, 500px)" }}>
+          style={{
+            right: "2%",
+            bottom: 0,
+            height: "95%",
+            width: "42%",
+            maxWidth: "480px",
+          }}>
           <HeroPhoto src={imageUrl} />
         </div>
 
         {/* Content */}
         <div className="relative z-[4] min-h-screen flex flex-col justify-between gap-6
-          px-8 lg:px-14 xl:px-20
+          px-8 lg:px-12 xl:px-16
           pb-16 pt-8
           pointer-events-none"
-          style={{ maxWidth: "52%" }}
+          style={{ maxWidth: "46%" }}
         >
-          <div className="pointer-events-auto">
+          <div className="pointer-events-auto flex flex-col gap-5 lg:gap-6 justify-between h-full min-h-screen py-2">
             <HeroContent roles={displayRoles} />
           </div>
         </div>

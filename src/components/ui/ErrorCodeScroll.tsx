@@ -62,10 +62,11 @@ export function ErrorCodeScroll() {
     <div
       className="absolute z-[2] overflow-hidden pointer-events-none select-none"
       style={{
-        right:  0,
+        right:  "2%",
         top:    0,
         bottom: 0,
-        width:  "58%",
+        width:  "44%",
+        maxWidth: "500px",
         maskImage:       "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
         WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
       }}
