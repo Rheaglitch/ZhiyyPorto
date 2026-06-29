@@ -35,16 +35,22 @@ const FATAL_LINES = [
   "PANIC: unable to handle page",
 ];
 
-export function ErrorCodeScroll() {
+interface ErrorCodeScrollProps {
+  side?: "left" | "right";
+}
+
+export function ErrorCodeScroll({ side = "right" }: ErrorCodeScrollProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const rafRef   = useRef<number>(0);
   const posRef   = useRef(0);
+
+  // Left side scrolls slightly slower and in opposite direction for variety
+  const speed = side === "right" ? 0.7 : 0.5;
 
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
 
-    const speed = 0.7;
     const animate = () => {
       posRef.current -= speed;
       const halfH = track.scrollHeight / 2;
@@ -54,22 +60,38 @@ export function ErrorCodeScroll() {
     };
     rafRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(rafRef.current);
-  }, []);
+  }, [speed]);
 
   const doubled = [...FATAL_LINES, ...FATAL_LINES];
+
+  // Left side: more subtle opacity, right side: more vivid
+  const opacityMultiplier = side === "left" ? 0.45 : 1;
 
   return (
     <div
       className="absolute z-[2] overflow-hidden pointer-events-none select-none"
-      style={{
-        right:  "2%",
-        top:    0,
-        bottom: 0,
-        width:  "44%",
-        maxWidth: "500px",
-        maskImage:       "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
-        WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
-      }}
+      style={
+        side === "right"
+          ? {
+              right:  "2%",
+              top:    0,
+              bottom: 0,
+              width:  "44%",
+              maxWidth: "500px",
+              maskImage:       "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
+            }
+          : {
+              left:   0,
+              top:    0,
+              bottom: 0,
+              width:  "46%",
+              maskImage:       "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%), linear-gradient(to right, black 0%, black 75%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%), linear-gradient(to right, black 0%, black 75%, transparent 100%)",
+              maskComposite:       "intersect",
+              WebkitMaskComposite: "destination-in",
+            }
+      }
       aria-hidden="true"
     >
       <div
@@ -80,12 +102,12 @@ export function ErrorCodeScroll() {
         {doubled.map((line, i) => {
           const isMain  = i % 5 === 0;
           const isFatal = line.startsWith("FATAL") || line.startsWith("CRITICAL") || line.startsWith("PANIC");
-          const alpha   = isMain ? 0.65 : 0.22;
-          const color   = isFatal
-            ? `rgba(220,30,30,${alpha + 0.2})`
+          const baseAlpha = isMain ? 0.65 : 0.22;
+          const color     = isFatal
+            ? `rgba(220,30,30,${(baseAlpha + 0.2) * opacityMultiplier})`
             : isMain
-            ? `rgba(185,65,65,${alpha})`
-            : `rgba(150,80,80,${alpha * 0.75})`;
+            ? `rgba(185,65,65,${baseAlpha * opacityMultiplier})`
+            : `rgba(150,80,80,${baseAlpha * 0.75 * opacityMultiplier})`;
 
           return (
             <div

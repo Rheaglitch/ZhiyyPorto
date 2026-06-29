@@ -265,9 +265,14 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
   return (
     <section id="home" className="relative overflow-hidden animated-gradient-bg min-h-screen w-full max-w-full">
 
-      {/* Error code scroll — desktop only, behind photo */}
+      {/* Error code scroll — desktop only, RIGHT side behind photo */}
       <div className="hidden md:block">
-        <ErrorCodeScroll />
+        <ErrorCodeScroll side="right" />
+      </div>
+
+      {/* Error code scroll — desktop only, LEFT side behind content, more subtle */}
+      <div className="hidden md:block">
+        <ErrorCodeScroll side="left" />
       </div>
 
       {/* Crescent — desktop only */}
