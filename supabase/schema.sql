@@ -163,8 +163,31 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
 );
 
 -- ============================================
--- Hero Image Setting
+-- Site Content Settings (editable by admin)
 -- ============================================
+INSERT INTO public.site_settings (key, value) VALUES
+  ('hero_name',    '{"first":"REAVLENIA","last":"AREZHA"}')
+ON CONFLICT (key) DO NOTHING;
+
+INSERT INTO public.site_settings (key, value) VALUES
+  ('hero_roles',   '{"roles":["Web Developer","Animator","UI/UX Designer","Illustrator"]}')
+ON CONFLICT (key) DO NOTHING;
+
+INSERT INTO public.site_settings (key, value) VALUES
+  ('hero_bio',     '{"text":"Menciptakan karya yang fungsional sekaligus indah — dari kode sampai kanvas."}')
+ON CONFLICT (key) DO NOTHING;
+
+INSERT INTO public.site_settings (key, value) VALUES
+  ('hero_stats',   '{"items":[{"value":"10+","label":"Projects"},{"value":"3+","label":"Years"},{"value":"5+","label":"Disciplines"}]}')
+ON CONFLICT (key) DO NOTHING;
+
+INSERT INTO public.site_settings (key, value) VALUES
+  ('about_bio',    '{"paragraphs":["Halo! Aku Reavlenia Arezha, seorang creative multidisiplin yang bergerak di dunia digital.","Bukan cuma ngoding — aku juga bikin animasi 2D, desain logo, UI/UX, fotografi, dan ilustrasi.","Stack utamaku Next.js + TypeScript untuk dev, Figma + Adobe Suite untuk desain."]}')
+ON CONFLICT (key) DO NOTHING;
+
+INSERT INTO public.site_settings (key, value) VALUES
+  ('contact_info', '{"email":"ohmyliinnn@gmail.com","github":"https://github.com/Rheaglitch","instagram":"https://instagram.com/","linkedin":"https://linkedin.com/","location":"Indonesia"}')
+ON CONFLICT (key) DO NOTHING;
 INSERT INTO public.site_settings (key, value)
 VALUES (
   'hero_image',

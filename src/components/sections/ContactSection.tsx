@@ -1,33 +1,22 @@
 import { Mail, Github, Linkedin, Instagram, MapPin } from "lucide-react";
 
-const contacts = [
-  {
-    icon: Mail,
-    label: "Email",
-    value: "ohmyliinnn@gmail.com",
-    href: "mailto:ohmyliinnn@gmail.com",
-  },
-  {
-    icon: Github,
-    label: "GitHub",
-    value: "github.com/Rheaglitch",
-    href: "https://github.com/Rheaglitch",
-  },
-  {
-    icon: Linkedin,
-    label: "LinkedIn",
-    value: "linkedin.com/in/reavlenia",
-    href: "https://linkedin.com/",
-  },
-  {
-    icon: Instagram,
-    label: "Instagram",
-    value: "@reavlenia",
-    href: "https://instagram.com/",
-  },
-];
+interface ContactSectionProps {
+  contactInfo?: Record<string, string>;
+}
 
-export function ContactSection() {
+export function ContactSection({ contactInfo = {} }: ContactSectionProps) {
+  const email     = contactInfo.email     || "ohmyliinnn@gmail.com";
+  const github    = contactInfo.github    || "https://github.com/Rheaglitch";
+  const instagram = contactInfo.instagram || "https://instagram.com/";
+  const linkedin  = contactInfo.linkedin  || "https://linkedin.com/";
+  const location  = contactInfo.location  || "Indonesia";
+
+  const contacts = [
+    { icon: Mail,      label: "Email",     value: email,                            href: `mailto:${email}`     },
+    { icon: Github,    label: "GitHub",    value: github.replace("https://", ""),   href: github                },
+    { icon: Linkedin,  label: "LinkedIn",  value: linkedin.replace("https://", ""), href: linkedin              },
+    { icon: Instagram, label: "Instagram", value: instagram.replace("https://",""), href: instagram             },
+  ];
   return (
     <section id="contact" className="py-20 px-6" style={{ background: "var(--section-alt)" }}>
       <div className="max-w-5xl mx-auto">
@@ -74,7 +63,7 @@ export function ContactSection() {
               </div>
               <div>
                 <p className="text-[11px] text-dark-600 font-mono">Location</p>
-                <p className="text-sm text-dark-300">Indonesia 🇮🇩</p>
+                <p className="text-sm text-dark-300">{location} 🇮🇩</p>
               </div>
             </div>
           </div>

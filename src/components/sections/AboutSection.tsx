@@ -9,29 +9,24 @@ const stats = [
 ];
 
 const traits = [
-  {
-    icon: Code2,
-    title: "Web Development",
-    desc: "Next.js, TypeScript, Supabase — bikin web yang cepat, clean, dan beneran jalan.",
-  },
-  {
-    icon: Palette,
-    title: "Design & Illustration",
-    desc: "UI/UX dengan Figma, ilustrasi digital & tradisional, desain logo dan branding.",
-  },
-  {
-    icon: Camera,
-    title: "Visual Creative",
-    desc: "Animasi 2D, motion graphics, fotografi — storytelling lewat visual.",
-  },
-  {
-    icon: Lightbulb,
-    title: "Problem Solver",
-    desc: "Senang ngulik masalah kompleks dan nyari solusi yang paling elegan.",
-  },
+  { icon: Code2,     title: "Web Development",      desc: "Next.js, TypeScript, Supabase — bikin web yang cepat, clean, dan beneran jalan."              },
+  { icon: Palette,   title: "Design & Illustration", desc: "UI/UX dengan Figma, ilustrasi digital & tradisional, desain logo dan branding."                },
+  { icon: Camera,    title: "Visual Creative",       desc: "Animasi 2D, motion graphics, fotografi — storytelling lewat visual."                          },
+  { icon: Lightbulb, title: "Problem Solver",        desc: "Senang ngulik masalah kompleks dan nyari solusi yang paling elegan."                           },
 ];
 
-export function AboutSection() {
+const DEFAULT_PARAS = [
+  "Halo! Aku Reavlenia Arezha, seorang creative multidisiplin yang bergerak di dunia digital.",
+  "Bukan cuma ngoding — aku juga bikin animasi 2D, desain logo, UI/UX, fotografi, dan ilustrasi.",
+  "Stack utamaku Next.js + TypeScript untuk dev, Figma + Adobe Suite untuk desain, dan After Effects untuk animasi.",
+];
+
+interface AboutSectionProps {
+  paragraphs?: string[];
+}
+
+export function AboutSection({ paragraphs }: AboutSectionProps) {
+  const displayParas = paragraphs && paragraphs.length > 0 ? paragraphs : DEFAULT_PARAS;
   return (
     <section id="about" className="py-20 px-6" style={{ background: "var(--bg-primary)" }}>
       <div className="max-w-6xl mx-auto">
@@ -49,19 +44,13 @@ export function AboutSection() {
           {/* Text */}
           <GlitchReveal className="lg:col-span-2 space-y-4 leading-relaxed text-sm" delay={100}>
             <p style={{ color: "var(--text-secondary)" }}>
-              Halo! Aku{" "}
-              <span className="text-blood-400 font-semibold">Reavlenia Arezha</span>
-              , seorang creative multidisiplin yang bergerak di dunia digital.
+              {displayParas[0]?.includes("Reavlenia") ? (
+                <>Halo! Aku{" "}<span className="text-blood-400 font-semibold">Reavlenia Arezha</span>{", "}{displayParas[0].split("Reavlenia Arezha")[1] ?? ""}</>
+              ) : displayParas[0]}
             </p>
-            <p style={{ color: "var(--text-secondary)" }}>
-              Bukan cuma ngoding — aku juga bikin{" "}
-              <span style={{ color: "var(--text-primary)" }}>animasi 2D, desain logo, UI/UX</span>,
-              fotografi, dan ilustrasi.
-            </p>
-            <p style={{ color: "var(--text-secondary)" }}>
-              Stack utamaku Next.js + TypeScript untuk dev, Figma + Adobe Suite
-              untuk desain, dan After Effects untuk animasi.
-            </p>
+            {displayParas.slice(1).map((p, i) => (
+              <p key={i} style={{ color: "var(--text-secondary)" }}>{p}</p>
+            ))}
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3 pt-4">
