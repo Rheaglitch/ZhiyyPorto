@@ -65,11 +65,9 @@ export function ErrorCodeScroll() {
         right:  0,
         top:    0,
         bottom: 0,
-        left:   "45%",  // hanya area kanan — tidak overlap konten kiri
-        maskImage:       "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%), linear-gradient(to right, transparent 0%, black 15%, black 100%)",
-        WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%), linear-gradient(to right, transparent 0%, black 15%, black 100%)",
-        maskComposite:        "intersect",
-        WebkitMaskComposite:  "destination-in",
+        width:  "58%",
+        maskImage:       "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
+        WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
       }}
       aria-hidden="true"
     >
@@ -79,26 +77,27 @@ export function ErrorCodeScroll() {
         style={{ willChange: "transform" }}
       >
         {doubled.map((line, i) => {
-          const isMain    = i % 5 === 0;
-          const isFatal   = line.startsWith("FATAL") || line.startsWith("CRITICAL") || line.startsWith("PANIC");
-          const baseAlpha = isMain ? 0.65 : 0.22;
-          const color     = isFatal
-            ? `rgba(220,30,30,${baseAlpha + 0.2})`
+          const isMain  = i % 5 === 0;
+          const isFatal = line.startsWith("FATAL") || line.startsWith("CRITICAL") || line.startsWith("PANIC");
+          const alpha   = isMain ? 0.65 : 0.22;
+          const color   = isFatal
+            ? `rgba(220,30,30,${alpha + 0.2})`
             : isMain
-            ? `rgba(185,65,65,${baseAlpha})`
-            : `rgba(150,80,80,${baseAlpha * 0.75})`;
+            ? `rgba(185,65,65,${alpha})`
+            : `rgba(150,80,80,${alpha * 0.75})`;
 
           return (
             <div
               key={i}
               className="font-mono leading-snug"
               style={{
-                fontSize:    isMain ? "15px" : "12px",
+                fontSize:     isMain ? "15px" : "12px",
                 color,
-                paddingLeft: `${(i % 3) * 20}px`,
+                paddingLeft:  `${12 + (i % 3) * 18}px`,
                 marginBottom: isMain ? "8px" : "3px",
                 letterSpacing: "0.04em",
-                fontWeight:  isMain ? 700 : 400,
+                fontWeight:   isMain ? 700 : 400,
+                whiteSpace:   "nowrap",
               }}
             >
               {line}
