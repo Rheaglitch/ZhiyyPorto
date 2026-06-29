@@ -84,6 +84,9 @@ export function ParallaxSection({
         transition: visible
           ? `transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.7s ease`
           : "none",
+        isolation: "isolate",
+        position: "relative",
+        zIndex: 10,
       }}
     >
       {children}

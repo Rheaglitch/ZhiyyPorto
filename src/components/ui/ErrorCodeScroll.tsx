@@ -45,19 +45,20 @@ const FATAL_LINES = [
   "PROCESS HOLLOW: PID 0x0",
 ];
 
-// Single scrolling column component
 function ScrollColumn({
   lines,
   speed,
   startOffset,
   fontSize,
-  opacityBase,
+  opacity,
+  leftPercent,
 }: {
-  lines: string[];
-  speed: number;
+  lines:       string[];
+  speed:       number;
   startOffset: number;
-  fontSize: number;
-  opacityBase: number;
+  fontSize:    number;
+  opacity:     number;
+  leftPercent: number;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const posRef   = useRef(startOffset);
@@ -82,88 +83,71 @@ function ScrollColumn({
   const doubled = [...lines, ...lines];
 
   return (
-    <div ref={trackRef} className="flex flex-col" style={{ willChange: "transform" }}>
-      {doubled.map((line, i) => {
-        const isMain  = i % 4 === 0;
-        const isFatal = line.startsWith("FATAL") || line.startsWith("CRITICAL") || line.startsWith("PANIC") || line.startsWith("ROOTKIT") || line.startsWith("SYSTEM F");
-        const alpha   = isMain
-          ? opacityBase + 0.25
-          : opacityBase * 0.55;
-        const color   = isFatal
-          ? `rgba(220,30,30,${alpha + 0.15})`
-          : isMain
-          ? `rgba(185,60,60,${alpha})`
-          : `rgba(130,70,70,${alpha * 0.8})`;
+    <div
+      className="absolute top-0 bottom-0 overflow-hidden"
+      style={{ left: `${leftPercent}%`, width: "75%", pointerEvents: "none" }}
+    >
+      <div ref={trackRef} className="flex flex-col pt-6" style={{ willChange: "transform" }}>
+        {doubled.map((line, i) => {
+          const isMain  = i % 4 === 0;
+          const isFatal = line.startsWith("FATAL") || line.startsWith("CRITICAL") ||
+                          line.startsWith("PANIC") || line.startsWith("ROOTKIT") ||
+                          line.startsWith("SYSTEM F") || line.startsWith("EXPLOIT");
+          const alpha = isMain ? opacity + 0.22 : opacity * 0.55;
+          const color = isFatal
+            ? `rgba(225,30,30,${alpha + 0.12})`
+            : isMain
+            ? `rgba(190,60,60,${alpha})`
+            : `rgba(130,65,65,${alpha * 0.85})`;
 
-        return (
-          <div key={i} className="font-mono leading-snug whitespace-nowrap"
-            style={{
-              fontSize:     `${fontSize}px`,
-              color,
-              marginBottom: isMain ? "7px" : "2px",
-              letterSpacing: "0.035em",
-              fontWeight:   isMain ? 700 : 400,
-            }}>
-            {line}
-          </div>
-        );
-      })}
+          return (
+            <div key={i} className="font-mono leading-snug whitespace-nowrap"
+              style={{
+                fontSize:     `${fontSize}px`,
+                color,
+                marginBottom: isMain ? "7px" : "2px",
+                letterSpacing: "0.04em",
+                fontWeight:   isMain ? 700 : 400,
+              }}>
+              {line}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-interface ErrorCodeScrollProps {
-  side?: "left" | "right";
-}
+export function ErrorCodeScroll({ side = "right" }: { side?: "left" | "right" }) {
+  if (side === "left") return null;
 
-export function ErrorCodeScroll({ side = "right" }: ErrorCodeScrollProps) {
-  if (side === "left") return null; // left side removed, handled by dark overlay
-
-  // Shuffle lines differently per column for variety
-  const col1 = FATAL_LINES.slice(0);
-  const col2 = [...FATAL_LINES.slice(15), ...FATAL_LINES.slice(0, 15)];
-  const col3 = [...FATAL_LINES.slice(8),  ...FATAL_LINES.slice(0, 8)];
-  const col4 = [...FATAL_LINES.slice(22), ...FATAL_LINES.slice(0, 22)];
-
+  // 3 columns that overlap each other — offset start so they appear staggered
   const columns = [
-    { lines: col1, speed: 0.75, startOffset: 0,    fontSize: 13, opacity: 0.52, flex: 27 },
-    { lines: col2, speed: 0.55, startOffset: -120, fontSize: 11, opacity: 0.35, flex: 23 },
-    { lines: col3, speed: 0.90, startOffset: -60,  fontSize: 14, opacity: 0.48, flex: 28 },
-    { lines: col4, speed: 0.45, startOffset: -200, fontSize: 10, opacity: 0.28, flex: 22 },
+    { lines: FATAL_LINES,                                                    speed: 0.70, startOffset: 0,    fontSize: 14, opacity: 0.50, leftPercent: 0   },
+    { lines: [...FATAL_LINES.slice(12), ...FATAL_LINES.slice(0, 12)],       speed: 0.50, startOffset: -150, fontSize: 12, opacity: 0.32, leftPercent: 18  },
+    { lines: [...FATAL_LINES.slice(25), ...FATAL_LINES.slice(0, 25)],       speed: 0.85, startOffset: -80,  fontSize: 15, opacity: 0.42, leftPercent: 32  },
   ];
 
   return (
     <div
-      className="absolute z-[2] overflow-hidden pointer-events-none select-none"
+      className="absolute z-[2] pointer-events-none select-none"
       style={{
         right:  0,
         top:    0,
         bottom: 0,
         width:  "56%",
-        // Fade from left (smooth transition), keep full on right
-        maskImage:       "linear-gradient(to right, transparent 0%, black 12%, black 100%), linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)",
-        WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 12%, black 100%), linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)",
+        overflow: "hidden",
+        maskImage:       "linear-gradient(to right, transparent 0%, black 10%, black 100%), linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%)",
+        WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 10%, black 100%), linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%)",
         maskComposite:       "intersect",
         WebkitMaskComposite: "destination-in",
       }}
       aria-hidden="true"
     >
-      {/* 4 columns side by side */}
-      <div className="flex h-full gap-0 pt-4">
+      {/* Relative wrapper so absolute columns are scoped */}
+      <div className="relative w-full h-full">
         {columns.map((col, idx) => (
-          <div
-            key={idx}
-            className="overflow-hidden relative"
-            style={{ flex: col.flex, paddingLeft: "6px", paddingRight: "2px" }}
-          >
-            <ScrollColumn
-              lines={col.lines}
-              speed={col.speed}
-              startOffset={col.startOffset}
-              fontSize={col.fontSize}
-              opacityBase={col.opacity}
-            />
-          </div>
+          <ScrollColumn key={idx} {...col} />
         ))}
       </div>
     </div>
