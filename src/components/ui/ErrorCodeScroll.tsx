@@ -46,19 +46,10 @@ const FATAL_LINES = [
 ];
 
 function ScrollColumn({
-  lines,
-  speed,
-  startOffset,
-  fontSize,
-  opacity,
-  leftPercent,
+  lines, speed, startOffset, fontSize, opacity,
 }: {
-  lines:       string[];
-  speed:       number;
-  startOffset: number;
-  fontSize:    number;
-  opacity:     number;
-  leftPercent: number;
+  lines: string[]; speed: number; startOffset: number;
+  fontSize: number; opacity: number;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const posRef   = useRef(startOffset);
@@ -68,7 +59,6 @@ function ScrollColumn({
     const track = trackRef.current;
     if (!track) return;
     posRef.current = startOffset;
-
     const animate = () => {
       posRef.current -= speed;
       const halfH = track.scrollHeight / 2;
@@ -81,39 +71,23 @@ function ScrollColumn({
   }, [speed, startOffset]);
 
   const doubled = [...lines, ...lines];
-
   return (
-    <div
-      className="absolute top-0 bottom-0 overflow-hidden"
-      style={{ left: `${leftPercent}%`, width: "75%", pointerEvents: "none" }}
-    >
-      <div ref={trackRef} className="flex flex-col pt-6" style={{ willChange: "transform" }}>
-        {doubled.map((line, i) => {
-          const isMain  = i % 4 === 0;
-          const isFatal = line.startsWith("FATAL") || line.startsWith("CRITICAL") ||
-                          line.startsWith("PANIC") || line.startsWith("ROOTKIT") ||
-                          line.startsWith("SYSTEM F") || line.startsWith("EXPLOIT");
-          const alpha = isMain ? opacity + 0.22 : opacity * 0.55;
-          const color = isFatal
-            ? `rgba(225,30,30,${alpha + 0.12})`
-            : isMain
-            ? `rgba(190,60,60,${alpha})`
-            : `rgba(130,65,65,${alpha * 0.85})`;
-
-          return (
-            <div key={i} className="font-mono leading-snug whitespace-nowrap"
-              style={{
-                fontSize:     `${fontSize}px`,
-                color,
-                marginBottom: isMain ? "7px" : "2px",
-                letterSpacing: "0.04em",
-                fontWeight:   isMain ? 700 : 400,
-              }}>
-              {line}
-            </div>
-          );
-        })}
-      </div>
+    <div ref={trackRef} className="flex flex-col pt-4" style={{ willChange: "transform" }}>
+      {doubled.map((line, i) => {
+        const isMain  = i % 4 === 0;
+        const isFatal = /^(FATAL|CRITICAL|PANIC|ROOTKIT|SYSTEM F|EXPLOIT)/.test(line);
+        const a = isMain ? opacity + 0.22 : opacity * 0.55;
+        const color = isFatal
+          ? `rgba(225,30,30,${a + 0.12})`
+          : isMain ? `rgba(190,60,60,${a})` : `rgba(130,65,65,${a * 0.85})`;
+        return (
+          <div key={i} className="font-mono leading-snug whitespace-nowrap"
+            style={{ fontSize: `${fontSize}px`, color, marginBottom: isMain ? "7px" : "2px",
+              letterSpacing: "0.04em", fontWeight: isMain ? 700 : 400 }}>
+            {line}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -121,33 +95,43 @@ function ScrollColumn({
 export function ErrorCodeScroll({ side = "right" }: { side?: "left" | "right" }) {
   if (side === "left") return null;
 
-  // 3 columns that overlap each other — shifted more to the right
   const columns = [
-    { lines: FATAL_LINES,                                              speed: 0.70, startOffset: 0,    fontSize: 14, opacity: 0.50, leftPercent: 2   },
-    { lines: [...FATAL_LINES.slice(12), ...FATAL_LINES.slice(0, 12)], speed: 0.50, startOffset: -150, fontSize: 12, opacity: 0.32, leftPercent: 22  },
-    { lines: [...FATAL_LINES.slice(25), ...FATAL_LINES.slice(0, 25)], speed: 0.85, startOffset: -80,  fontSize: 15, opacity: 0.42, leftPercent: 38  },
+    { lines: FATAL_LINES,                                              speed: 0.70, startOffset: 0,    fontSize: 14, opacity: 0.50 },
+    { lines: [...FATAL_LINES.slice(12), ...FATAL_LINES.slice(0, 12)], speed: 0.50, startOffset: -150, fontSize: 12, opacity: 0.32 },
+    { lines: [...FATAL_LINES.slice(25), ...FATAL_LINES.slice(0, 25)], speed: 0.85, startOffset: -80,  fontSize: 15, opacity: 0.42 },
+  ];
+
+  // Each column positioned absolutely, extending to right edge
+  const positions = [
+    { left: "0%",   width: "70%" },
+    { left: "20%",  width: "70%" },
+    { left: "38%",  width: "62%" }, // rightmost reaches 100%
   ];
 
   return (
+    // Container covers entire right 60% of hero, no overflow hidden on container
     <div
       className="absolute z-[2] pointer-events-none select-none"
       style={{
         right:  0,
         top:    0,
         bottom: 0,
-        width:  "62%",
-        overflow: "hidden",
-        maskImage:       "linear-gradient(to right, transparent 0%, black 10%, black 100%), linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%)",
-        WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 10%, black 100%), linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%)",
+        left:   "40%", // start at 40% from left = right 60%
+        // Fade only on left edge and top/bottom
+        maskImage:       "linear-gradient(to right, transparent 0%, black 8%, black 100%), linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%)",
+        WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 8%, black 100%), linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%)",
         maskComposite:       "intersect",
         WebkitMaskComposite: "destination-in",
+        overflow: "hidden",
       }}
       aria-hidden="true"
     >
-      {/* Relative wrapper so absolute columns are scoped */}
       <div className="relative w-full h-full">
         {columns.map((col, idx) => (
-          <ScrollColumn key={idx} {...col} />
+          <div key={idx} className="absolute top-0 bottom-0 overflow-hidden"
+            style={{ left: positions[idx].left, width: positions[idx].width }}>
+            <ScrollColumn {...col} />
+          </div>
         ))}
       </div>
     </div>

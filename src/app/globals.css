@@ -53,18 +53,24 @@ body {
 
 main  { position: relative; z-index: 2; }
 
-/* Hero sticky: sections after hero stack on top of it */
-main > *:not(:first-child) {
+/* All sections after hero cover it when scrolling */
+main > *:not(:first-child),
+main > *:not(:first-child) > * {
   position: relative;
   z-index: 10;
-  background: var(--bg-primary); /* solid bg so it covers hero */
 }
 
-header, footer { position: relative; z-index: 10; }
+/* Ensure ParallaxSection wrappers have solid bg propagation */
+section {
+  position: relative;
+  isolation: isolate;
+}
 
-/* Prevent sticky from being broken by overflow */
-html, body {
-  overflow-x: hidden;
+header, footer { position: relative; z-index: 50; }
+
+/* Push content above mobile bottom nav */
+@media (max-width: 767px) {
+  main { padding-bottom: 64px; }
 }
 
 /* Push content above mobile bottom nav */

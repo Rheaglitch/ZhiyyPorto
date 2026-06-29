@@ -296,14 +296,14 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
       {/* ═══ DESKTOP (≥ 768px) ═══
           Content left + photo right */}
       <div className="hidden md:block">
-        {/* Photo — center-right, not touching right edge */}
+        {/* Photo — right side, full height */}
         <div className="absolute z-[5] select-none"
           style={{
-            right: "2%",
+            right:  0,
             bottom: 0,
-            height: "95%",
-            width: "42%",
-            maxWidth: "480px",
+            top:    0,
+            width:  "48%",
+            maxWidth: "520px",
           }}>
           <HeroPhoto src={imageUrl} />
         </div>

@@ -163,7 +163,11 @@ export function Navbar() {
   const isHome = pathname === "/";
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > window.innerHeight - 60);
+    const onScroll = () => {
+      // Navbar transitions to top when user scrolls past 30% of viewport height
+      // This matches when About section starts covering the hero
+      setScrolled(window.scrollY > window.innerHeight * 0.3);
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
@@ -177,8 +181,6 @@ export function Navbar() {
       <header
         className={cn(
           "fixed z-50 left-0 right-0 transition-all duration-500",
-          // Desktop: bottom on hero, top after scroll
-          // Mobile: hidden (replaced by MobileBottomNav)
           "hidden md:block",
           isBottom
             ? "bottom-0 top-auto bg-dark-950/85 backdrop-blur-md border-t border-dark-800/60"
