@@ -154,7 +154,7 @@ function HeroContent({ roles, nameFirst, nameLast, bio, stats, compact = false }
         <p className="font-mono text-[10px] text-blood-600 tracking-[0.3em] uppercase mb-1.5">Creative Portfolio</p>
         <h1 className="font-black leading-none tracking-tight">
           <span className={`block text-dark-100 ${sz}`}>{nameFirst}</span>
-          <span className={`block text-dark-500 font-bold ${sz}`}>{nameLast}</span>
+          <span className={`block font-bold ${sz}`} style={{ color: "var(--hero-name-2)" }}>{nameLast}</span>
         </h1>
       </div>
 
@@ -237,11 +237,11 @@ export function HeroSection({ heroImageUrl, roles = [], nameFirst = "REAVLENIA",
       className="sticky top-0 overflow-hidden animated-gradient-bg w-full max-w-full"
       style={{ zIndex: 1, height: "100vh" }}
     >
-      {/* Dark overlay left — readability */}
+      {/* Dark/light overlay left — readability */}
       <div className="absolute hidden md:block z-[3] pointer-events-none"
         style={{
           left: 0, top: 0, bottom: 0, width: "50%",
-          background: "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.5) 70%, transparent 100%)",
+          background: "linear-gradient(to right, var(--overlay-left) 0%, color-mix(in srgb, var(--overlay-left) 60%, transparent) 70%, transparent 100%)",
         }}
         aria-hidden="true"
       />

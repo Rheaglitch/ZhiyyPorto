@@ -148,7 +148,7 @@ function Starfield() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 z-0 pointer-events-none"
-      style={{ opacity: 0.85 }}
+      style={{ opacity: 0.85, mixBlendMode: "screen" as React.CSSProperties["mixBlendMode"] }}
       aria-hidden="true"
     />
   );
