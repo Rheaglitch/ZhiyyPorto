@@ -265,14 +265,20 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
   return (
     <section id="home" className="relative overflow-hidden animated-gradient-bg min-h-screen w-full max-w-full">
 
-      {/* Error code scroll — desktop only, RIGHT side behind photo */}
+      {/* Dark overlay on left side — improves text readability */}
+      <div
+        className="absolute hidden md:block z-[3] pointer-events-none"
+        style={{
+          left: 0, top: 0, bottom: 0,
+          width: "50%",
+          background: "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.5) 70%, transparent 100%)",
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Error code scroll — RIGHT BOTTOM area (below photo) */}
       <div className="hidden md:block">
         <ErrorCodeScroll side="right" />
-      </div>
-
-      {/* Error code scroll — desktop only, LEFT side behind content, more subtle */}
-      <div className="hidden md:block">
-        <ErrorCodeScroll side="left" />
       </div>
 
       {/* Crescent — desktop only */}

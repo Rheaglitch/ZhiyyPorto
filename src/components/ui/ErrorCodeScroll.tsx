@@ -73,23 +73,18 @@ export function ErrorCodeScroll({ side = "right" }: ErrorCodeScrollProps) {
       style={
         side === "right"
           ? {
-              right:  "2%",
-              top:    0,
-              bottom: 0,
-              width:  "44%",
-              maxWidth: "500px",
-              maskImage:       "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
-              WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
-            }
-          : {
-              left:   0,
-              top:    0,
-              bottom: 0,
-              width:  "46%",
-              maskImage:       "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%), linear-gradient(to right, black 0%, black 75%, transparent 100%)",
-              WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%), linear-gradient(to right, black 0%, black 75%, transparent 100%)",
+              right:   "0",
+              bottom:  "0",
+              height:  "45%",   // hanya area bawah kanan
+              width:   "52%",
+              maskImage:       "linear-gradient(to bottom, transparent 0%, black 20%, black 100%), linear-gradient(to right, transparent 0%, black 15%, black 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 20%, black 100%), linear-gradient(to right, transparent 0%, black 15%, black 100%)",
               maskComposite:       "intersect",
               WebkitMaskComposite: "destination-in",
+            }
+          : {
+              // left side unused now, kept for future use
+              left:   0, top: 0, bottom: 0, width: "0",
             }
       }
       aria-hidden="true"
