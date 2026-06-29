@@ -8,7 +8,7 @@ function AuroraBlobs() {
     <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
       <div className="absolute rounded-full blur-[130px]"
         style={{
-          width:"550px",height:"550px",opacity:0.07,
+          width:"min(550px,80vw)",height:"min(550px,80vw)",opacity:0.07,
           background:"radial-gradient(circle,#7d1212 0%,#3d0808 60%,transparent 100%)",
           top:"-80px",left:"-80px",
           animation:"blob1 20s ease-in-out infinite",
@@ -16,7 +16,7 @@ function AuroraBlobs() {
       />
       <div className="absolute rounded-full blur-[150px]"
         style={{
-          width:"650px",height:"650px",opacity:0.055,
+          width:"min(650px,90vw)",height:"min(650px,90vw)",opacity:0.055,
           background:"radial-gradient(circle,#9b1515 0%,#3d0808 55%,transparent 100%)",
           bottom:"-120px",right:"-120px",
           animation:"blob2 26s ease-in-out infinite",

@@ -43,9 +43,14 @@ export function ChatBot() {
   const isDragging = useRef(false);
   const messagesRef = useRef<HTMLDivElement>(null);
 
-  // Init position — bottom right
+  // Init position — bottom right, above mobile nav
   useEffect(() => {
-    setPos({ x: window.innerWidth - 64, y: window.innerHeight - 80 });
+    const isMobile = window.innerWidth < 768;
+    const bottomOffset = isMobile ? 80 : 64; // above mobile bottom nav (64px) + gap
+    setPos({
+      x: window.innerWidth  - 64,
+      y: window.innerHeight - bottomOffset,
+    });
   }, []);
 
   // Drag logic
@@ -56,7 +61,7 @@ export function ChatBot() {
       const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
       setPos({
         x: Math.max(24, Math.min(window.innerWidth  - 24, cx - dragOffset.current.x)),
-        y: Math.max(24, Math.min(window.innerHeight - 24, cy - dragOffset.current.y)),
+        y: Math.max(24, Math.min(window.innerHeight - (window.innerWidth < 768 ? 80 : 32), cy - dragOffset.current.y)),
       });
     };
     const onUp = () => {
@@ -106,8 +111,8 @@ export function ChatBot() {
           className="fixed z-[55] rounded-2xl border border-[var(--border)] overflow-hidden shadow-2xl shadow-black/50"
           style={{
             width:  "min(288px, calc(100vw - 32px))",
-            left:   Math.min(Math.max(pos.x + 16, 16), window.innerWidth  - Math.min(288, window.innerWidth - 32) - 16),
-            top:    Math.max(Math.min(pos.y - 380, window.innerHeight - 420), 16),
+            left:   Math.min(Math.max(pos.x - 144, 16), window.innerWidth - Math.min(288, window.innerWidth - 32) - 16),
+            top:    Math.max(pos.y - 400, 60),
             background: "var(--bg-card)",
           }}
         >
