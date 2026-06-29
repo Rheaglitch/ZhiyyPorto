@@ -263,7 +263,10 @@ export function HeroSection({ heroImageUrl, roles }: HeroSectionProps) {
   const displayRoles = roles && roles.length > 0 ? roles : FALLBACK_ROLES;
 
   return (
-    <section id="home" className="sticky top-0 overflow-hidden animated-gradient-bg min-h-screen w-full max-w-full" style={{ zIndex: 1 }}>
+    <section id="home"
+      className="sticky top-0 overflow-hidden animated-gradient-bg w-full max-w-full"
+      style={{ zIndex: 1, height: "100vh" }}
+    >
 
       {/* Dark overlay on left side — improves text readability */}
       <div

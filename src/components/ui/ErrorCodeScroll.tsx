@@ -121,11 +121,11 @@ function ScrollColumn({
 export function ErrorCodeScroll({ side = "right" }: { side?: "left" | "right" }) {
   if (side === "left") return null;
 
-  // 3 columns that overlap each other — offset start so they appear staggered
+  // 3 columns that overlap each other — shifted more to the right
   const columns = [
-    { lines: FATAL_LINES,                                                    speed: 0.70, startOffset: 0,    fontSize: 14, opacity: 0.50, leftPercent: 0   },
-    { lines: [...FATAL_LINES.slice(12), ...FATAL_LINES.slice(0, 12)],       speed: 0.50, startOffset: -150, fontSize: 12, opacity: 0.32, leftPercent: 18  },
-    { lines: [...FATAL_LINES.slice(25), ...FATAL_LINES.slice(0, 25)],       speed: 0.85, startOffset: -80,  fontSize: 15, opacity: 0.42, leftPercent: 32  },
+    { lines: FATAL_LINES,                                              speed: 0.70, startOffset: 0,    fontSize: 14, opacity: 0.50, leftPercent: 2   },
+    { lines: [...FATAL_LINES.slice(12), ...FATAL_LINES.slice(0, 12)], speed: 0.50, startOffset: -150, fontSize: 12, opacity: 0.32, leftPercent: 22  },
+    { lines: [...FATAL_LINES.slice(25), ...FATAL_LINES.slice(0, 25)], speed: 0.85, startOffset: -80,  fontSize: 15, opacity: 0.42, leftPercent: 38  },
   ];
 
   return (
@@ -135,7 +135,7 @@ export function ErrorCodeScroll({ side = "right" }: { side?: "left" | "right" })
         right:  0,
         top:    0,
         bottom: 0,
-        width:  "56%",
+        width:  "62%",
         overflow: "hidden",
         maskImage:       "linear-gradient(to right, transparent 0%, black 10%, black 100%), linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%)",
         WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 10%, black 100%), linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%)",
