@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 import { ContentProtectionProvider } from "@/components/layout/ContentProtectionProvider";
 import { BackgroundEffects } from "@/components/layout/BackgroundEffects";
 import { ScrollProgress } from "@/components/layout/ScrollProgress";
@@ -56,6 +57,18 @@ export default function RootLayout({
             <ChatBot />
           </ContentProtectionProvider>
         </ThemeProvider>
+
+        {/* Tidio — hide default widget, our custom ball triggers it */}
+        <Script
+          src="//code.tidio.co/wallov1dqedsk4xnf8mdnzgzxmweosyf.js"
+          strategy="lazyOnload"
+        />
+        <style>{`
+          /* Hide Tidio default launcher — we use our own custom ball */
+          #tidio-chat-iframe,
+          #tidio-chat,
+          .tidio-1 { display: none !important; }
+        `}</style>
       </body>
     </html>
   );

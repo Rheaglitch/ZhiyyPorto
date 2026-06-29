@@ -121,7 +121,25 @@ export function ChatBot() {
   }
 
   function handleClick() {
-    if (!dragging) setOpen(!open);
+    if (dragging) return;
+
+    // Try to open Tidio if available
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tidio = (window as any).tidioChatApi;
+    if (tidio) {
+      // Show Tidio iframe temporarily, open it
+      const tidioEl = document.getElementById("tidio-chat-iframe") ||
+                      document.getElementById("tidio-chat");
+      if (tidioEl) tidioEl.style.removeProperty("display");
+      tidio.open();
+
+      // Re-hide after a moment if user closes Tidio
+      // Tidio will manage its own visibility from this point
+      return;
+    }
+
+    // Fallback: use local chatbot if Tidio not loaded yet
+    setOpen(!open);
   }
 
   function sendMessage() {
@@ -236,7 +254,7 @@ export function ChatBot() {
           top:       pos.y - 24,
           transition: dragging ? "none" : "box-shadow 0.2s, transform 0.1s",
         }}
-        aria-label="Open chat assistant"
+        aria-label="Open chat"
       >
         {open
           ? <X size={18} className="text-white" />
