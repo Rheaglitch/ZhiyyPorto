@@ -128,6 +128,8 @@ export function SkillCarousel({ skills, direction = "left", label }: SkillCarous
         style={{ maskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)" }}
         onMouseEnter={() => { pauseRef.current = true;  }}
         onMouseLeave={() => { pauseRef.current = false; }}
+        onTouchStart={() => { pauseRef.current = true;  }}
+        onTouchEnd={()   => { setTimeout(() => { pauseRef.current = false; }, 1500); }}
       >
         {/* Carousel track */}
         <div

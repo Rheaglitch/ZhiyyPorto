@@ -103,10 +103,11 @@ export function ChatBot() {
       {/* Chat window */}
       {open && (
         <div
-          className="fixed z-[55] w-72 rounded-2xl border border-[var(--border)] overflow-hidden shadow-2xl shadow-black/50"
+          className="fixed z-[55] rounded-2xl border border-[var(--border)] overflow-hidden shadow-2xl shadow-black/50"
           style={{
-            left:   Math.min(pos.x + 16, window.innerWidth  - 300),
-            top:    Math.max(pos.y - 380, 16),
+            width:  "min(288px, calc(100vw - 32px))",
+            left:   Math.min(Math.max(pos.x + 16, 16), window.innerWidth  - Math.min(288, window.innerWidth - 32) - 16),
+            top:    Math.max(Math.min(pos.y - 380, window.innerHeight - 420), 16),
             background: "var(--bg-card)",
           }}
         >

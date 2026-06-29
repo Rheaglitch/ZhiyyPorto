@@ -76,7 +76,7 @@ export function VideoModal({ videoUrl, isOpen, onClose }: VideoModalProps) {
             {/* Close button */}
             <button
               onClick={onClose}
-              className="absolute -top-10 right-0 text-dark-300 hover:text-white transition-colors p-1"
+              className="absolute -top-10 right-0 text-dark-300 hover:text-white transition-colors p-2 bg-dark-900/80 rounded-full"
               aria-label="Tutup video"
             >
               <X size={24} />
