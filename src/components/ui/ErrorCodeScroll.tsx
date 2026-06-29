@@ -33,95 +33,138 @@ const FATAL_LINES = [
   "HEAP CORRUPTION DETECTED",
   "0xDEADBEEF — TRACE LOST",
   "PANIC: unable to handle page",
+  "FIREWALL BYPASSED",
+  "PAYLOAD INJECTED — ROOTSHELL",
+  "EXPLOIT SUCCESSFUL: CVE-0xDEAD",
+  "REMOTE CODE EXECUTION DETECTED",
+  "BACKDOOR ESTABLISHED",
+  "PRIVILEGE ESCALATION: root",
+  "ARP POISONING ACTIVE",
+  "DNS HIJACK IN PROGRESS",
+  "KERNEL MODULE LOADED: HIDDEN",
+  "PROCESS HOLLOW: PID 0x0",
 ];
+
+// Single scrolling column component
+function ScrollColumn({
+  lines,
+  speed,
+  startOffset,
+  fontSize,
+  opacityBase,
+}: {
+  lines: string[];
+  speed: number;
+  startOffset: number;
+  fontSize: number;
+  opacityBase: number;
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const posRef   = useRef(startOffset);
+  const rafRef   = useRef<number>(0);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    posRef.current = startOffset;
+
+    const animate = () => {
+      posRef.current -= speed;
+      const halfH = track.scrollHeight / 2;
+      if (Math.abs(posRef.current) >= halfH) posRef.current += halfH;
+      track.style.transform = `translateY(${posRef.current}px)`;
+      rafRef.current = requestAnimationFrame(animate);
+    };
+    rafRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [speed, startOffset]);
+
+  const doubled = [...lines, ...lines];
+
+  return (
+    <div ref={trackRef} className="flex flex-col" style={{ willChange: "transform" }}>
+      {doubled.map((line, i) => {
+        const isMain  = i % 4 === 0;
+        const isFatal = line.startsWith("FATAL") || line.startsWith("CRITICAL") || line.startsWith("PANIC") || line.startsWith("ROOTKIT") || line.startsWith("SYSTEM F");
+        const alpha   = isMain
+          ? opacityBase + 0.25
+          : opacityBase * 0.55;
+        const color   = isFatal
+          ? `rgba(220,30,30,${alpha + 0.15})`
+          : isMain
+          ? `rgba(185,60,60,${alpha})`
+          : `rgba(130,70,70,${alpha * 0.8})`;
+
+        return (
+          <div key={i} className="font-mono leading-snug whitespace-nowrap"
+            style={{
+              fontSize:     `${fontSize}px`,
+              color,
+              marginBottom: isMain ? "7px" : "2px",
+              letterSpacing: "0.035em",
+              fontWeight:   isMain ? 700 : 400,
+            }}>
+            {line}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 interface ErrorCodeScrollProps {
   side?: "left" | "right";
 }
 
 export function ErrorCodeScroll({ side = "right" }: ErrorCodeScrollProps) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const rafRef   = useRef<number>(0);
-  const posRef   = useRef(0);
+  if (side === "left") return null; // left side removed, handled by dark overlay
 
-  // Left side scrolls slightly slower and in opposite direction for variety
-  const speed = side === "right" ? 0.7 : 0.5;
+  // Shuffle lines differently per column for variety
+  const col1 = FATAL_LINES.slice(0);
+  const col2 = [...FATAL_LINES.slice(15), ...FATAL_LINES.slice(0, 15)];
+  const col3 = [...FATAL_LINES.slice(8),  ...FATAL_LINES.slice(0, 8)];
+  const col4 = [...FATAL_LINES.slice(22), ...FATAL_LINES.slice(0, 22)];
 
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-
-    const animate = () => {
-      posRef.current -= speed;
-      const halfH = track.scrollHeight / 2;
-      if (Math.abs(posRef.current) >= halfH) posRef.current = 0;
-      track.style.transform = `translateY(${posRef.current}px)`;
-      rafRef.current = requestAnimationFrame(animate);
-    };
-    rafRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [speed]);
-
-  const doubled = [...FATAL_LINES, ...FATAL_LINES];
-
-  // Left side: more subtle opacity, right side: more vivid
-  const opacityMultiplier = side === "left" ? 0.45 : 1;
+  const columns = [
+    { lines: col1, speed: 0.75, startOffset: 0,    fontSize: 13, opacity: 0.52, flex: 27 },
+    { lines: col2, speed: 0.55, startOffset: -120, fontSize: 11, opacity: 0.35, flex: 23 },
+    { lines: col3, speed: 0.90, startOffset: -60,  fontSize: 14, opacity: 0.48, flex: 28 },
+    { lines: col4, speed: 0.45, startOffset: -200, fontSize: 10, opacity: 0.28, flex: 22 },
+  ];
 
   return (
     <div
       className="absolute z-[2] overflow-hidden pointer-events-none select-none"
-      style={
-        side === "right"
-          ? {
-              right:   "0",
-              bottom:  "0",
-              height:  "45%",   // hanya area bawah kanan
-              width:   "52%",
-              maskImage:       "linear-gradient(to bottom, transparent 0%, black 20%, black 100%), linear-gradient(to right, transparent 0%, black 15%, black 100%)",
-              WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 20%, black 100%), linear-gradient(to right, transparent 0%, black 15%, black 100%)",
-              maskComposite:       "intersect",
-              WebkitMaskComposite: "destination-in",
-            }
-          : {
-              // left side unused now, kept for future use
-              left:   0, top: 0, bottom: 0, width: "0",
-            }
-      }
+      style={{
+        right:  0,
+        top:    0,
+        bottom: 0,
+        width:  "56%",
+        // Fade from left (smooth transition), keep full on right
+        maskImage:       "linear-gradient(to right, transparent 0%, black 12%, black 100%), linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)",
+        WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 12%, black 100%), linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)",
+        maskComposite:       "intersect",
+        WebkitMaskComposite: "destination-in",
+      }}
       aria-hidden="true"
     >
-      <div
-        ref={trackRef}
-        className="flex flex-col pt-8"
-        style={{ willChange: "transform" }}
-      >
-        {doubled.map((line, i) => {
-          const isMain  = i % 5 === 0;
-          const isFatal = line.startsWith("FATAL") || line.startsWith("CRITICAL") || line.startsWith("PANIC");
-          const baseAlpha = isMain ? 0.65 : 0.22;
-          const color     = isFatal
-            ? `rgba(220,30,30,${(baseAlpha + 0.2) * opacityMultiplier})`
-            : isMain
-            ? `rgba(185,65,65,${baseAlpha * opacityMultiplier})`
-            : `rgba(150,80,80,${baseAlpha * 0.75 * opacityMultiplier})`;
-
-          return (
-            <div
-              key={i}
-              className="font-mono leading-snug"
-              style={{
-                fontSize:     isMain ? "15px" : "12px",
-                color,
-                paddingLeft:  `${12 + (i % 3) * 18}px`,
-                marginBottom: isMain ? "8px" : "3px",
-                letterSpacing: "0.04em",
-                fontWeight:   isMain ? 700 : 400,
-                whiteSpace:   "nowrap",
-              }}
-            >
-              {line}
-            </div>
-          );
-        })}
+      {/* 4 columns side by side */}
+      <div className="flex h-full gap-0 pt-4">
+        {columns.map((col, idx) => (
+          <div
+            key={idx}
+            className="overflow-hidden relative"
+            style={{ flex: col.flex, paddingLeft: "6px", paddingRight: "2px" }}
+          >
+            <ScrollColumn
+              lines={col.lines}
+              speed={col.speed}
+              startOffset={col.startOffset}
+              fontSize={col.fontSize}
+              opacityBase={col.opacity}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
