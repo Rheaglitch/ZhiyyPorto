@@ -18,19 +18,22 @@ export function FloatingActions() {
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="Scroll to top"
       className={cn(
-        "fixed z-[45] w-10 h-10 rounded-full",
+        "fixed z-[9990]", // Below Tidio (9999) but above everything else
+        "w-10 h-10 rounded-full",
         "bg-blood-700 hover:bg-blood-600 text-white",
         "flex items-center justify-center",
         "shadow-lg shadow-blood-900/40",
         "transition-all duration-300",
-        // Mobile (<768): above bottom nav 64px + gap → bottom-20 (80px), left side to avoid Tidio (right)
-        // Tablet (768-1024): Tidio is bottom-right, put scroll-to-top on left
-        // Desktop (>1024): right side is fine, Tidio doesn't overlap much
-        "bottom-[88px] right-16 md:bottom-24 md:right-4",
         show
           ? "opacity-100 translate-y-0 pointer-events-auto"
           : "opacity-0 translate-y-4 pointer-events-none"
       )}
+      style={{
+        // Tidio default sits at bottom:20px right:20px, size ~52px
+        // We go: 20 + 52 + 16 (gap) = 88px from bottom, same right side
+        right:  "20px",
+        bottom: "88px",
+      }}
     >
       <ArrowUp size={16} />
     </button>
