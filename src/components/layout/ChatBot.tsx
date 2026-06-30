@@ -4,208 +4,218 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-const BALL_SIZE    = 48;  // px diameter
-const BALL_RADIUS  = BALL_SIZE / 2;
-const EDGE_PADDING = 16;  // min distance from screen edge
+const BALL_SIZE    = 48;   // px diameter
+const SAFE_PADDING = 12;   // min distance from edges
+const STORAGE_KEY  = "zhiyy_chatbot_pos";
 
-function getDefaultPos() {
-  if (typeof window === "undefined") return { x: 0, y: 0 };
-  const isMobile = window.innerWidth < 768;
-  return {
-    x: window.innerWidth  - BALL_RADIUS - EDGE_PADDING,
-    y: window.innerHeight - (isMobile ? 152 : 96) - BALL_RADIUS,
-  };
-}
-
-function clampPos(x: number, y: number) {
-  const maxX = window.innerWidth  - BALL_RADIUS - EDGE_PADDING;
-  const maxY = window.innerHeight - BALL_RADIUS - EDGE_PADDING;
-  const minX = BALL_RADIUS + EDGE_PADDING;
-  const minY = BALL_RADIUS + EDGE_PADDING;
+function clampPos(x: number, y: number): { x: number; y: number } {
+  const maxX = window.innerWidth  - BALL_SIZE - SAFE_PADDING;
+  const maxY = window.innerHeight - BALL_SIZE - SAFE_PADDING;
+  const minX = SAFE_PADDING;
+  const minY = SAFE_PADDING;
   return {
     x: Math.max(minX, Math.min(maxX, x)),
     y: Math.max(minY, Math.min(maxY, y)),
   };
 }
 
-// ─── ChatBot ─────────────────────────────────────────────────────────────────
+function getDefaultPos(): { x: number; y: number } {
+  // Default: bottom-right, above scroll-to-top (which is at bottom:88px right:20px)
+  // So chatbot at bottom: 88 + 48 + 12 = 148px from bottom
+  const x = window.innerWidth  - BALL_SIZE - SAFE_PADDING - 4;
+  const y = window.innerHeight - BALL_SIZE - 148;
+  return clampPos(x, y);
+}
+
 export function ChatBot() {
-  const [pos,   setPos  ] = useState({ x: 0, y: 0 });
-  const [ready, setReady] = useState(false);
-  const [pulse, setPulse] = useState(true);
+  const [pos,      setPos     ] = useState({ x: -999, y: -999 }); // offscreen until mounted
+  const [tidioOpen, setTidioOpen] = useState(false);
 
   const posRef      = useRef({ x: 0, y: 0 });
-  const dragOffset  = useRef({ x: 0, y: 0 });
   const isDragging  = useRef(false);
-  const totalMoved  = useRef(0);
-  const animFrameRef = useRef<number>(0);
+  const startTouch  = useRef({ x: 0, y: 0 });
+  const movedTotal  = useRef(0);
+  const dragOffset  = useRef({ x: 0, y: 0 });
 
-  // ── Init position after mount ──
+  // ── Init position ──────────────────────────────────────────────────────────
   useEffect(() => {
-    const p = getDefaultPos();
-    setPos(p);
-    posRef.current = p;
-    setReady(true);
-
-    // Pulse animation — stop after 3 seconds
-    const t = setTimeout(() => setPulse(false), 3000);
-    return () => clearTimeout(t);
-  }, []);
-
-  // ── Clamp position on window resize ──
-  const handleResize = useCallback(() => {
-    const clamped = clampPos(posRef.current.x, posRef.current.y);
-    posRef.current = clamped;
+    let initial: { x: number; y: number };
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      initial = saved ? JSON.parse(saved) : getDefaultPos();
+    } catch {
+      initial = getDefaultPos();
+    }
+    const clamped = clampPos(initial.x, initial.y);
     setPos(clamped);
+    posRef.current = clamped;
   }, []);
 
+  // ── Window resize → clamp into view ───────────────────────────────────────
   useEffect(() => {
-    window.addEventListener("resize", handleResize, { passive: true });
-    return () => window.removeEventListener("resize", handleResize);
-  }, [handleResize]);
-
-  // ── Drag event handlers ──
-  useEffect(() => {
-    const onMove = (e: MouseEvent | TouchEvent) => {
-      if (!isDragging.current) return;
-
-      // Prevent scroll while dragging on mobile
-      if ("touches" in e) e.preventDefault();
-
-      const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
-      const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
-
-      const rawX = cx - dragOffset.current.x;
-      const rawY = cy - dragOffset.current.y;
-      const clamped = clampPos(rawX, rawY);
-
-      totalMoved.current +=
-        Math.abs(clamped.x - posRef.current.x) +
-        Math.abs(clamped.y - posRef.current.y);
-
+    const onResize = () => {
+      const clamped = clampPos(posRef.current.x, posRef.current.y);
       posRef.current = clamped;
-
-      // RAF for smooth rendering
-      cancelAnimationFrame(animFrameRef.current);
-      animFrameRef.current = requestAnimationFrame(() => {
-        setPos({ ...posRef.current });
-      });
+      setPos({ ...clamped });
     };
-
-    const onEnd = () => {
-      isDragging.current = false;
-    };
-
-    window.addEventListener("mousemove",  onMove, { passive: false });
-    window.addEventListener("mouseup",    onEnd);
-    window.addEventListener("touchmove",  onMove, { passive: false });
-    window.addEventListener("touchend",   onEnd);
-    window.addEventListener("touchcancel",onEnd);
-
-    return () => {
-      window.removeEventListener("mousemove",  onMove);
-      window.removeEventListener("mouseup",    onEnd);
-      window.removeEventListener("touchmove",  onMove);
-      window.removeEventListener("touchend",   onEnd);
-      window.removeEventListener("touchcancel",onEnd);
-      cancelAnimationFrame(animFrameRef.current);
-    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  function onPointerDown(e: React.MouseEvent | React.TouchEvent) {
-    // Prevent ghost click on mobile
-    if ("touches" in e) e.preventDefault();
+  // ── Save position when done dragging ──────────────────────────────────────
+  const savePos = useCallback((x: number, y: number) => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ x, y })); } catch {}
+  }, []);
 
-    const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
-
-    dragOffset.current = {
-      x: cx - posRef.current.x,
-      y: cy - posRef.current.y,
+  // ── Global move + up/end handlers ────────────────────────────────────────
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return;
+      const nx = e.clientX - dragOffset.current.x;
+      const ny = e.clientY - dragOffset.current.y;
+      movedTotal.current += Math.abs(nx - posRef.current.x) + Math.abs(ny - posRef.current.y);
+      const clamped = clampPos(nx, ny);
+      posRef.current = clamped;
+      setPos({ ...clamped });
     };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!isDragging.current) return;
+      e.preventDefault();
+      const t = e.touches[0];
+      const nx = t.clientX - dragOffset.current.x;
+      const ny = t.clientY - dragOffset.current.y;
+      movedTotal.current += Math.abs(nx - posRef.current.x) + Math.abs(ny - posRef.current.y);
+      const clamped = clampPos(nx, ny);
+      posRef.current = clamped;
+      setPos({ ...clamped });
+    };
+    const onMouseUp = () => {
+      if (!isDragging.current) return;
+      isDragging.current = false;
+      savePos(posRef.current.x, posRef.current.y);
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      if (!isDragging.current) return;
+      isDragging.current = false;
+      savePos(posRef.current.x, posRef.current.y);
+      // Tap = little movement
+      if (movedTotal.current < 8) {
+        e.preventDefault();
+        openTidio();
+      }
+      movedTotal.current = 0;
+    };
+
+    window.addEventListener("mousemove",  onMouseMove);
+    window.addEventListener("mouseup",    onMouseUp);
+    window.addEventListener("touchmove",  onTouchMove,  { passive: false });
+    window.addEventListener("touchend",   onTouchEnd,   { passive: false });
+    return () => {
+      window.removeEventListener("mousemove",  onMouseMove);
+      window.removeEventListener("mouseup",    onMouseUp);
+      window.removeEventListener("touchmove",  onTouchMove);
+      window.removeEventListener("touchend",   onTouchEnd);
+    };
+  }, [savePos]);
+
+  // ── Pointer down ──────────────────────────────────────────────────────────
+  function onMouseDown(e: React.MouseEvent) {
+    e.preventDefault();
     isDragging.current = true;
-    totalMoved.current = 0;
+    movedTotal.current = 0;
+    dragOffset.current = { x: e.clientX - posRef.current.x, y: e.clientY - posRef.current.y };
+  }
+  function onTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    isDragging.current = true;
+    movedTotal.current = 0;
+    dragOffset.current = { x: t.clientX - posRef.current.x, y: t.clientY - posRef.current.y };
+    startTouch.current = { x: t.clientX, y: t.clientY };
   }
 
-  function onPointerUp(e: React.MouseEvent | React.TouchEvent) {
-    if ("touches" in e) e.preventDefault();
-    isDragging.current = false;
-
-    // Only treat as tap/click if barely moved (< 10px cumulative)
-    if (totalMoved.current < 10) {
+  // ── Mouse click (only if not dragged) ────────────────────────────────────
+  function onMouseUp(e: React.MouseEvent) {
+    if (movedTotal.current < 8) {
+      e.stopPropagation();
       openTidio();
     }
-    totalMoved.current = 0;
+    movedTotal.current = 0;
   }
 
+  // ── Open Tidio ────────────────────────────────────────────────────────────
   function openTidio() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tidio = (window as any).tidioChatApi;
-    if (tidio) {
-      try {
-        // Tidio may have hidden its widget — show and open
-        const tidioContainer =
-          document.getElementById("tidio-chat") ||
-          document.getElementById("tidio-chat-code") ||
-          document.querySelector("#tidio-chat-iframe")?.parentElement;
-
-        if (tidioContainer) {
-          (tidioContainer as HTMLElement).style.display = "";
-          (tidioContainer as HTMLElement).style.visibility = "";
-        }
-        tidio.open();
-      } catch (err) {
-        console.warn("Tidio open failed:", err);
+    const api = (window as any).tidioChatApi;
+    if (api) {
+      // Make sure Tidio iframe is visible
+      const el = document.getElementById("tidio-chat") ||
+                 document.getElementById("tidio-chat-iframe");
+      if (el) el.style.removeProperty("display");
+      if (tidioOpen) {
+        api.close?.();
+        setTidioOpen(false);
+      } else {
+        api.open();
+        setTidioOpen(true);
       }
     } else {
-      // Tidio not loaded yet — wait and retry once
-      setTimeout(() => {
+      // Tidio not loaded yet — wait for it
+      document.addEventListener("tidioChat-ready", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const t = (window as any).tidioChatApi;
-        if (t) try { t.open(); } catch { /* ignore */ }
-      }, 1500);
+        (window as any).tidioChatApi?.open();
+        setTidioOpen(true);
+      }, { once: true });
     }
   }
 
-  if (!ready) return null;
+  // Ball is offscreen until mounted
+  const mounted = pos.x > -900;
 
   return (
     <button
-      onMouseDown={onPointerDown}
-      onMouseUp={onPointerUp}
-      onTouchStart={onPointerDown}
-      onTouchEnd={onPointerUp}
-      aria-label="Chat with us"
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
+      onTouchStart={onTouchStart}
+      aria-label="Open chat"
       className={cn(
-        "fixed z-[9990]",
+        "fixed z-[9990] select-none touch-none",
         "flex items-center justify-center",
-        "select-none touch-none",
-        "transition-shadow duration-200",
-        "hover:shadow-xl hover:shadow-blood-900/60",
-        "active:scale-95",
+        "transition-opacity duration-300",
+        mounted ? "opacity-100" : "opacity-0 pointer-events-none"
       )}
       style={{
-        width:     `${BALL_SIZE}px`,
-        height:    `${BALL_SIZE}px`,
+        left:   pos.x,
+        top:    pos.y,
+        width:  `${BALL_SIZE}px`,
+        height: `${BALL_SIZE}px`,
         borderRadius: "50%",
-        left:      `${pos.x - BALL_RADIUS}px`,
-        top:       `${pos.y - BALL_RADIUS}px`,
         background: "linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)",
-        border:    "2px solid rgba(220,38,38,0.45)",
-        boxShadow: "0 4px 20px rgba(153,21,21,0.55)",
-        cursor:    "grab",
-        WebkitTapHighlightColor: "transparent",
+        border:     "2px solid rgba(220,38,38,0.45)",
+        boxShadow:  "0 4px 20px rgba(153,21,21,0.55), 0 0 0 0 rgba(220,38,38,0.4)",
+        cursor:     isDragging.current ? "grabbing" : "grab",
+        animation:  tidioOpen ? "none" : "chatPulse 2.5s ease-in-out infinite",
       }}
     >
-      <MessageCircle size={20} className="text-white pointer-events-none" />
+      {tidioOpen
+        ? <X          size={20} className="text-white pointer-events-none" />
+        : <MessageCircle size={20} className="text-white pointer-events-none" />
+      }
 
-      {/* Pulse ring — shows on load */}
-      {pulse && (
-        <span
-          className="absolute inset-0 rounded-full border-2 border-blood-400/50 animate-ping pointer-events-none"
-        />
-      )}
+      <style>{`
+        @keyframes chatPulse {
+          0%, 100% { box-shadow: 0 4px 20px rgba(153,21,21,0.55), 0 0 0 0 rgba(220,38,38,0.4); }
+          50%       { box-shadow: 0 4px 20px rgba(153,21,21,0.55), 0 0 0 10px rgba(220,38,38,0); }
+        }
+
+        /* ── Hide Tidio's own launcher button ── */
+        #tidio-chat-iframe { pointer-events: auto !important; }
+        #tidio-chat > div[class*="chat-icon"],
+        #tidio-chat > div[class*="launcher"],
+        #tidio-chat > div[id*="launcher"],
+        #tidio-chat > div:first-child:not([id*="chat-window"]) {
+          display: none !important;
+        }
+      `}</style>
     </button>
   );
 }

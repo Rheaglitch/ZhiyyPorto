@@ -6,8 +6,8 @@ import { ContentProtectionProvider } from "@/components/layout/ContentProtection
 import { BackgroundEffects } from "@/components/layout/BackgroundEffects";
 import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
-import { ChatBot } from "@/components/layout/ChatBot";
 import { FloatingActions } from "@/components/layout/FloatingActions";
+import { ChatBot } from "@/components/layout/ChatBot";
 import { GlitchIntro } from "@/components/layout/GlitchIntro";
 
 const geistSans = Geist({
@@ -54,6 +54,7 @@ export default function RootLayout({
             <BackgroundEffects />
             {children}
             <FloatingActions />
+            <ChatBot />
             <ChatBot />
           </ContentProtectionProvider>
         </ThemeProvider>
