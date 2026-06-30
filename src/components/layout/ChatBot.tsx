@@ -147,10 +147,6 @@ export function ChatBot() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api = (window as any).tidioChatApi;
     if (api) {
-      // Make sure Tidio iframe is visible
-      const el = document.getElementById("tidio-chat") ||
-                 document.getElementById("tidio-chat-iframe");
-      if (el) el.style.removeProperty("display");
       if (tidioOpen) {
         api.close?.();
         setTidioOpen(false);
@@ -205,15 +201,6 @@ export function ChatBot() {
         @keyframes chatPulse {
           0%, 100% { box-shadow: 0 4px 20px rgba(153,21,21,0.55), 0 0 0 0 rgba(220,38,38,0.4); }
           50%       { box-shadow: 0 4px 20px rgba(153,21,21,0.55), 0 0 0 10px rgba(220,38,38,0); }
-        }
-
-        /* ── Hide Tidio's own launcher button ── */
-        #tidio-chat-iframe { pointer-events: auto !important; }
-        #tidio-chat > div[class*="chat-icon"],
-        #tidio-chat > div[class*="launcher"],
-        #tidio-chat > div[id*="launcher"],
-        #tidio-chat > div:first-child:not([id*="chat-window"]) {
-          display: none !important;
         }
       `}</style>
     </button>

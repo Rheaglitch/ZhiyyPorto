@@ -59,18 +59,41 @@ export default function RootLayout({
           </ContentProtectionProvider>
         </ThemeProvider>
 
-        {/* Tidio — custom ball triggers it, hide default launcher */}
+        {/* Tidio live chat */}
         <Script
+          id="tidio-script"
           src="//code.tidio.co/wallov1dqedsk4xnf8mdnzgzxmweosyf.js"
           strategy="lazyOnload"
         />
-        <style>{`
-          /* Point 1: Hide Tidio default launcher widget */
-          #tidio-chat-iframe { display: none !important; visibility: hidden !important; }
-          #tidio-chat         { opacity: 0; pointer-events: none; }
-          /* Re-show chat WINDOW (not launcher) when Tidio is open */
-          #tidio-chat.tidio-chat-open { opacity: 1 !important; pointer-events: all !important; }
-        `}</style>
+        {/* Hide Tidio launcher ONLY — keep chat window functional */}
+        <Script id="tidio-hide" strategy="lazyOnload">{`
+          function hideTidioLauncher() {
+            try {
+              var el = document.getElementById('tidio-chat-iframe');
+              if (!el) return false;
+              var doc = el.contentDocument || el.contentWindow && el.contentWindow.document;
+              if (!doc) return false;
+              // Inject CSS into Tidio iframe to hide only the launcher button
+              var style = doc.createElement('style');
+              style.textContent = '[class*="chat-icon"],[class*="launcher"],[aria-label*="chat"],[aria-label*="Chat"]{display:none!important}';
+              doc.head.appendChild(style);
+              return true;
+            } catch(e) { return false; }
+          }
+          document.addEventListener('tidioChat-ready', function() {
+            // Try to hide launcher via API setting
+            if (window.tidioChatApi) {
+              window.tidioChatApi.on('close', function() {
+                // keep iframe visible so window stays accessible
+              });
+            }
+            // Attempt to hide launcher button inside iframe
+            var attempts = 0;
+            var interval = setInterval(function() {
+              if (hideTidioLauncher() || ++attempts > 20) clearInterval(interval);
+            }, 300);
+          });
+        `}</Script>
       </body>
     </html>
   );
