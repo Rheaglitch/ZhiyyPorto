@@ -146,17 +146,34 @@ export function ChatBot() {
   function openTidio() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api = (window as any).tidioChatApi;
+    const iframe = document.getElementById("tidio-chat-iframe") as HTMLElement | null;
+
     if (api) {
       if (tidioOpen) {
         api.close?.();
+        // Hide iframe again after close
+        setTimeout(() => {
+          if (iframe) iframe.style.display = "none";
+        }, 300);
         setTidioOpen(false);
       } else {
+        // Show iframe first, then open
+        if (iframe) iframe.style.removeProperty("display");
         api.open();
+        // Listen for close event to re-hide
+        api.on?.("close", () => {
+          setTimeout(() => {
+            if (iframe) iframe.style.display = "none";
+          }, 300);
+          setTidioOpen(false);
+        });
         setTidioOpen(true);
       }
     } else {
-      // Tidio not loaded yet — wait for it
+      // Wait for Tidio to be ready
       document.addEventListener("tidioChat-ready", () => {
+        const freshIframe = document.getElementById("tidio-chat-iframe") as HTMLElement | null;
+        if (freshIframe) freshIframe.style.removeProperty("display");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).tidioChatApi?.open();
         setTidioOpen(true);
