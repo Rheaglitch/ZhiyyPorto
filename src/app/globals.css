@@ -60,7 +60,15 @@ main > *:not(:first-child) > * {
 section { position: relative; isolation: isolate; }
 header, footer { position: relative; z-index: 50; }
 
-@media (max-width: 767px) { main { padding-bottom: 64px; } }
+@media (max-width: 767px) {
+  main {
+    padding-bottom: 72px; /* clear mobile bottom nav 64px + 8px gap */
+  }
+  footer {
+    margin-bottom: 0;
+    padding-bottom: 72px; /* also clear bottom nav on footer */
+  }
+}
 
 /* Scrollbar */
 ::-webkit-scrollbar       { width: 5px; }

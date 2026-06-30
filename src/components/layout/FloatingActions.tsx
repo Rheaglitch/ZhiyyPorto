@@ -18,11 +18,14 @@ export function FloatingActions() {
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="Scroll to top"
       className={cn(
-        "fixed right-5 bottom-20 z-40 w-10 h-10 rounded-full",
+        "fixed z-[45] w-10 h-10 rounded-full",
         "bg-blood-700 hover:bg-blood-600 text-white",
         "flex items-center justify-center",
-        "border border-blood-600/40 shadow-lg shadow-blood-900/40",
+        "shadow-lg shadow-blood-900/40",
         "transition-all duration-300",
+        // Mobile: above bottom nav 64px + chatbot gap = right-4 bottom-[88px]
+        // Desktop: right-5 bottom-20
+        "right-4 bottom-[88px] md:right-5 md:bottom-20",
         show
           ? "opacity-100 translate-y-0 pointer-events-auto"
           : "opacity-0 translate-y-4 pointer-events-none"

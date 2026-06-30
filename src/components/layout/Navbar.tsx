@@ -84,24 +84,14 @@ function MusicControl() {
 // ─── Mobile Bottom Nav ────────────────────────────────────────────────────────
 function MobileBottomNav() {
   const pathname = usePathname();
-  const { theme, toggle } = useTheme();
-  const [moreOpen, setMoreOpen] = useState(false);
 
   return (
     <>
-      {/* Backdrop when more open */}
-      {moreOpen && (
-        <div
-          className="fixed inset-0 z-[45]"
-          onClick={() => setMoreOpen(false)}
-        />
-      )}
-
       {/* Bottom nav bar */}
       <nav
         className="fixed bottom-0 left-0 right-0 z-[50] md:hidden border-t"
         style={{
-          background: "color-mix(in srgb, var(--bg-primary) 95%, transparent)",
+          background: "var(--bg-primary)",
           borderColor: "var(--border)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
@@ -114,41 +104,21 @@ function MobileBottomNav() {
               <Link
                 key={href}
                 href={href}
-                className="flex flex-col items-center justify-center gap-0.5 w-12 h-12 rounded-xl transition-all active:scale-90"
+                className="relative flex flex-col items-center justify-center gap-0.5 w-12 h-12 rounded-xl transition-all active:scale-90"
               >
                 <Icon
                   size={isActive ? 20 : 18}
-                  className={cn(
-                    "transition-all",
-                    isActive ? "text-blood-500" : "text-dark-500"
-                  )}
+                  className={cn("transition-all", isActive ? "text-blood-500" : "text-dark-500")}
                 />
-                <span className={cn(
-                  "text-[9px] font-mono transition-colors",
-                  isActive ? "text-blood-500" : "text-dark-600"
-                )}>
+                <span className={cn("text-[9px] font-mono transition-colors", isActive ? "text-blood-500" : "text-dark-600")}>
                   {label}
                 </span>
                 {isActive && (
-                  <span className="absolute top-0 w-1 h-1 rounded-full bg-blood-500" />
+                  <span className="absolute top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blood-500" />
                 )}
               </Link>
             );
           })}
-
-          {/* More button — theme toggle */}
-          <button
-            onClick={toggle}
-            className="flex flex-col items-center justify-center gap-0.5 w-12 h-12 rounded-xl transition-all active:scale-90"
-          >
-            {theme === "dark"
-              ? <Sun size={18} className="text-dark-500" />
-              : <Moon size={18} className="text-dark-500" />
-            }
-            <span className="text-[9px] font-mono text-dark-600">
-              {theme === "dark" ? "Light" : "Dark"}
-            </span>
-          </button>
         </div>
       </nav>
     </>
@@ -183,14 +153,22 @@ export function Navbar() {
         className={cn(
           "fixed z-50 left-0 right-0 transition-all duration-500",
           "hidden md:block",
-          isBottom
-            ? "bottom-0 top-auto bg-dark-950/85 backdrop-blur-md border-t border-dark-800/60"
-            : "top-0 bottom-auto backdrop-blur-md border-b"
         )}
-        style={!isBottom ? {
+        style={isBottom ? {
+          bottom: 0,
+          top: "auto",
           background: "var(--bg-primary)",
-          borderColor: "var(--border)",
-        } : {}}
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          borderTop: "1px solid var(--border)",
+        } : {
+          top: 0,
+          bottom: "auto",
+          background: "var(--bg-primary)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          borderBottom: "1px solid var(--border)",
+        }}
       >
         <nav className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
           <NavLogo />

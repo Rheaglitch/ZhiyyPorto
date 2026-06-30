@@ -75,12 +75,14 @@ export function ChatBot() {
   const isDragging = useRef(false);
   const messagesRef = useRef<HTMLDivElement>(null);
 
-  // Init position — bottom right, above mobile nav
+  // Init position — default above scroll-to-top button
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
-    const bottomOffset = isMobile ? 80 : 64; // above mobile bottom nav (64px) + gap
+    // Desktop: bottom-20 (80px) + chatball height 48px + gap 8px = 136px from bottom, right-5
+    // Mobile: above bottom nav (64px) + gap 8px = 72px, then chatball above scroll-to-top
+    const bottomOffset = isMobile ? 144 : 136; // above both scroll-to-top and bottom nav
     setPos({
-      x: window.innerWidth  - 64,
+      x: window.innerWidth - (isMobile ? 40 : 44),
       y: window.innerHeight - bottomOffset,
     });
   }, []);
