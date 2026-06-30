@@ -54,21 +54,14 @@ export default function RootLayout({
             <BackgroundEffects />
             {children}
             <FloatingActions />
-            <ChatBot />
           </ContentProtectionProvider>
         </ThemeProvider>
 
-        {/* Tidio — hide default widget, our custom ball triggers it */}
+        {/* Tidio — use default widget */}
         <Script
           src="//code.tidio.co/wallov1dqedsk4xnf8mdnzgzxmweosyf.js"
           strategy="lazyOnload"
         />
-        <style>{`
-          /* Hide Tidio default launcher — we use our own custom ball */
-          #tidio-chat-iframe,
-          #tidio-chat,
-          .tidio-1 { display: none !important; }
-        `}</style>
       </body>
     </html>
   );

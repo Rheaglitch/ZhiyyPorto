@@ -23,9 +23,10 @@ export function FloatingActions() {
         "flex items-center justify-center",
         "shadow-lg shadow-blood-900/40",
         "transition-all duration-300",
-        // Mobile: above bottom nav 64px + chatbot gap = right-4 bottom-[88px]
-        // Desktop: right-5 bottom-20
-        "right-4 bottom-[88px] md:right-5 md:bottom-20",
+        // Mobile (<768): above bottom nav 64px + gap → bottom-20 (80px), left side to avoid Tidio (right)
+        // Tablet (768-1024): Tidio is bottom-right, put scroll-to-top on left
+        // Desktop (>1024): right side is fine, Tidio doesn't overlap much
+        "bottom-[88px] right-16 md:bottom-24 md:right-4",
         show
           ? "opacity-100 translate-y-0 pointer-events-auto"
           : "opacity-0 translate-y-4 pointer-events-none"
