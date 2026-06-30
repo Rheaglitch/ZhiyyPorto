@@ -87,6 +87,7 @@ export function ParallaxSection({
         isolation: "isolate",
         position: "relative",
         zIndex: 10,
+        background: "var(--bg-primary)", // prevent transparent gaps
       }}
     >
       {children}

@@ -53,6 +53,11 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
   const [uploadingImg,  setUploadingImg] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // ── Site logo ──
+  const [logoUrl,       setLogoUrl     ] = useState<string>((s.site_logo?.url as string) ?? "");
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoRef = useRef<HTMLInputElement>(null);
+
   // ── About bio ──
   const [aboutParas, setAboutParas] = useState<string[]>(
     (s.about_bio?.paragraphs as string[]) ??
@@ -78,7 +83,6 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
     setUploadingImg(true);
     const supabase = createAdminClient();
 
-    // Delete old file if exists
     if (heroImgUrl) {
       const oldPath = heroImgUrl.split("/hero/")[1];
       if (oldPath) await supabase.storage.from("hero").remove([oldPath]);
@@ -95,6 +99,31 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
     if (fileRef.current) fileRef.current.value = "";
   }
 
+  // ── Upload site logo ──
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { alert("Maks 2MB"); return; }
+
+    setUploadingLogo(true);
+    const supabase = createAdminClient();
+
+    if (logoUrl) {
+      const oldPath = logoUrl.split("/logos/")[1];
+      if (oldPath) await supabase.storage.from("logos").remove([oldPath]);
+    }
+
+    const ext  = file.name.split(".").pop();
+    const path = `logo-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("logos").upload(path, file, { upsert: true });
+    if (error) { alert("Upload logo gagal: " + error.message); setUploadingLogo(false); return; }
+
+    const { data: pub } = supabase.storage.from("logos").getPublicUrl(path);
+    setLogoUrl(pub.publicUrl);
+    setUploadingLogo(false);
+    if (logoRef.current) logoRef.current.value = "";
+  }
+
   // ── Save all ──
   async function handleSave() {
     setStatus("saving");
@@ -106,6 +135,7 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
       { key: "hero_bio",    value: { text: heroBio } },
       { key: "hero_stats",  value: { items: stats } },
       { key: "hero_image",  value: { url: heroImgUrl } },
+      { key: "site_logo",   value: { url: logoUrl } },
       { key: "about_bio",   value: { paragraphs: aboutParas } },
       { key: "contact_info",value: { email, github, instagram, linkedin, location } },
     ];
@@ -120,6 +150,39 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
 
   return (
     <div className="max-w-2xl space-y-0">
+
+      {/* ── Site Logo ── */}
+      <Section title="Site Logo (Navbar & Footer)">
+        <div className="flex items-center gap-4">
+          {logoUrl ? (
+            <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-dark-900 border border-dark-800 shrink-0 flex items-center justify-center">
+              <Image src={logoUrl} alt="Logo" width={48} height={48} className="w-12 h-12 object-contain" unoptimized />
+            </div>
+          ) : (
+            <div className="w-16 h-16 rounded-lg bg-dark-900 border border-dashed border-dark-700 flex items-center justify-center shrink-0">
+              <span className="text-dark-700 font-mono text-xs text-center">no logo</span>
+            </div>
+          )}
+          <div className="flex-1 space-y-2">
+            <label className={labelCls}>Upload logo (PNG/SVG, maks 2MB)</label>
+            <p className="text-[10px] text-dark-600 font-mono">
+              Logo ini akan tampil di navbar dan footer. Gunakan format PNG transparan atau SVG.
+            </p>
+            <label className="flex items-center gap-2 w-fit px-4 py-2 rounded-lg bg-dark-900 border border-dark-800 hover:border-dark-700 text-dark-400 text-xs font-mono cursor-pointer transition-colors">
+              {uploadingLogo ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+              {uploadingLogo ? "Uploading..." : "Pilih logo"}
+              <input ref={logoRef} type="file" accept="image/png,image/svg+xml,image/webp"
+                onChange={handleLogoUpload} className="hidden" />
+            </label>
+            {logoUrl && (
+              <button onClick={() => setLogoUrl("")}
+                className="text-[10px] text-dark-600 hover:text-blood-400 font-mono transition-colors">
+                Hapus logo (kembali ke teks)
+              </button>
+            )}
+          </div>
+        </div>
+      </Section>
 
       {/* ── Hero Section ── */}
       <Section title="Hero — Nama">

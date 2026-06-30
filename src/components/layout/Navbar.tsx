@@ -5,9 +5,10 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import {
   Home, User, Wrench, FolderOpen, Mail,
-  Sun, Moon, Music2, Pause, Play, Volume2, VolumeX, Menu, X
+  Sun, Moon, Music2, Pause, Play, Volume2, VolumeX
 } from "lucide-react";
 import { useTheme } from "@/components/layout/ThemeProvider";
+import { NavLogo } from "@/components/layout/NavLogo";
 import { cn } from "@/lib/utils";
 
 const desktopLinks = [
@@ -184,21 +185,22 @@ export function Navbar() {
           "hidden md:block",
           isBottom
             ? "bottom-0 top-auto bg-dark-950/85 backdrop-blur-md border-t border-dark-800/60"
-            : "top-0 bottom-auto backdrop-blur-md border-b border-[var(--border)]"
+            : "top-0 bottom-auto backdrop-blur-md border-b"
         )}
-        style={!isBottom ? { background: "color-mix(in srgb, var(--bg-primary) 92%, transparent)" } : {}}
+        style={!isBottom ? {
+          background: "var(--bg-primary)",
+          borderColor: "var(--border)",
+        } : {}}
       >
         <nav className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
-          <Link href="/"
-            className="font-mono font-bold text-lg text-dark-100 hover:text-blood-500 transition-colors shrink-0">
-            <span className="text-blood-600">&lt;</span>Zhiyy<span className="text-blood-600">/&gt;</span>
-          </Link>
+          <NavLogo />
 
           <ul className="flex items-center gap-5 flex-1 justify-center">
             {desktopLinks.map(link => (
               <li key={link.href}>
                 <Link href={link.href}
-                  className="text-xs font-mono text-dark-400 hover:text-blood-400 transition-colors tracking-wide">
+                  className="text-xs font-mono hover:text-blood-400 transition-colors tracking-wide"
+                  style={{ color: "var(--text-secondary)" }}>
                   {link.label}
                 </Link>
               </li>
@@ -209,34 +211,29 @@ export function Navbar() {
             <MusicControl />
             <button
               onClick={toggle}
-              className="w-8 h-8 rounded-full flex items-center justify-center border border-[var(--border)] bg-[var(--bg-card)] text-dark-400 hover:text-blood-400 hover:border-blood-800 transition-all"
+              className="w-8 h-8 rounded-full flex items-center justify-center border transition-all"
+              style={{ borderColor: "var(--border)", background: "var(--bg-card)", color: "var(--text-muted)" }}
               aria-label="Toggle theme"
             >
               {theme === "dark" ? <Sun size={13} /> : <Moon size={13} />}
             </button>
-            <Link href="/#contact"
-              className="px-4 py-1.5 rounded-full bg-blood-700 hover:bg-blood-600 text-white text-xs font-medium transition-colors">
-              Hire Me
-            </Link>
           </div>
         </nav>
       </header>
 
-      {/* ── Mobile top bar (logo only) ── */}
       <header className="fixed top-0 left-0 right-0 z-50 md:hidden flex items-center justify-between px-4 h-12"
         style={{
-          background: "color-mix(in srgb, var(--bg-primary) 90%, transparent)",
+          background: "var(--bg-primary)",
           backdropFilter: "blur(12px)",
           borderBottom: "1px solid var(--border)",
         }}
       >
-        <Link href="/" className="font-mono font-bold text-base text-dark-100">
-          <span className="text-blood-600">&lt;</span>Zhiyy<span className="text-blood-600">/&gt;</span>
-        </Link>
-        <Link href="/#contact"
-          className="px-3 py-1 rounded-full bg-blood-700 text-white text-[10px] font-medium">
-          Hire Me
-        </Link>
+        <NavLogo />
+        <button onClick={toggle}
+          className="w-8 h-8 rounded-full flex items-center justify-center border transition-all"
+          style={{ borderColor: "var(--border)", background: "var(--bg-card)", color: "var(--text-muted)" }}>
+          {theme === "dark" ? <Sun size={13} /> : <Moon size={13} />}
+        </button>
       </header>
 
       {/* ── Mobile bottom nav ── */}

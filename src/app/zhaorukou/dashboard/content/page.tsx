@@ -8,7 +8,7 @@ export default async function ContentPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sb = (await createClient()) as any;
 
-  const keys = ["hero_name","hero_roles","hero_bio","hero_stats","hero_image","about_bio","contact_info"];
+  const keys = ["hero_name","hero_roles","hero_bio","hero_stats","hero_image","about_bio","contact_info","site_logo"];
   const { data } = await sb.from("site_settings").select("key,value").in("key", keys);
 
   // Build a map key→value
