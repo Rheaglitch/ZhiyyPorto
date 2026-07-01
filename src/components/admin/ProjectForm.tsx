@@ -70,32 +70,34 @@ export function ProjectForm({ project, categories, existingImages = [] }: Projec
 
       const { error: uploadError } = await supabase.storage
         .from("project-images")
-        .upload(storagePath, file, { upsert: false });
+        .upload(storagePath, file, { upsert: true });
 
-      if (uploadError) {
-        console.error("Upload error:", uploadError.message);
-        continue;
-      }
+      if (uploadError) { console.error("Upload error:", uploadError.message); continue; }
 
-      const { data: urlData } = supabase.storage
-        .from("project-images")
-        .getPublicUrl(storagePath);
-
+      const { data: urlData } = supabase.storage.from("project-images").getPublicUrl(storagePath);
       uploaded.push({ storage_path: storagePath, url: urlData.publicUrl });
     }
-
     return uploaded;
+  }
+
+  async function callApi(action: string, payload: Record<string, unknown>) {
+    const res = await fetch("/api/project-save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, payload }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error ?? "API error");
+    return json;
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    // Validate video_url
     if (form.video_url && !isValidYouTubeUrl(form.video_url)) {
       setVideoError("URL video tidak valid. Gunakan format YouTube: watch?v=... atau youtu.be/...");
       return;
     }
-
     if (!categoryId) {
       setError("Pilih atau buat category terlebih dahulu.");
       return;
@@ -104,86 +106,54 @@ export function ProjectForm({ project, categories, existingImages = [] }: Projec
     setLoading(true);
     setError(null);
 
-    const supabase = createAdminClient();
-
-    const payload = {
-      title: form.title,
-      description: form.description,
+    const projectData = {
+      title:            form.title,
+      description:      form.description,
       long_description: form.long_description || null,
-      tech_stack: form.tech_stack
-        .split(",")
-        .map((t: string) => t.trim())
-        .filter(Boolean),
-      live_url: form.live_url || null,
-      github_url: form.github_url || null,
-      video_url: form.video_url || null,
-      featured: form.featured,
-      order_index: Number(form.order_index),
-      category_id: categoryId,
+      tech_stack:       form.tech_stack.split(",").map((t: string) => t.trim()).filter(Boolean),
+      live_url:         form.live_url   || null,
+      github_url:       form.github_url || null,
+      video_url:        form.video_url  || null,
+      featured:         form.featured,
+      order_index:      Number(form.order_index),
+      category_id:      categoryId,
     };
 
-    if (isEdit && project) {
-      // Update project
-      const { error: updateError } = await supabase
-        .from("projects")
-        .update(payload)
-        .eq("id", project.id);
-      if (updateError) {
-        setError(updateError.message);
-        setLoading(false);
-        return;
+    try {
+      let projectId = project?.id ?? "";
+
+      if (isEdit && project) {
+        // Update via server API
+        await callApi("upsert_project", { projectId: project.id, projectData });
+
+        // Delete images via server API
+        for (const img of imagesToDelete) {
+          await callApi("delete_image", { imageId: img.id, storagePath: img.storage_path });
+        }
+      } else {
+        // Insert via server API — returns new id
+        const result = await callApi("upsert_project", { projectId: null, projectData });
+        projectId = result.id;
       }
 
-      // Delete marked images from Storage + DB
-      for (const img of imagesToDelete) {
-        await supabase.storage
-          .from("project-images")
-          .remove([img.storage_path]);
-        await supabase
-          .from("project_images")
-          .delete()
-          .eq("id", img.id);
-      }
-
-      // Upload new pending files
-      if (pendingFiles.length > 0) {
-        const uploaded = await uploadFiles(project.id, pendingFiles);
+      // Upload files directly (storage upload from client is fine)
+      if (pendingFiles.length > 0 && projectId) {
+        const uploaded = await uploadFiles(projectId, pendingFiles);
         for (const u of uploaded) {
-          await supabase.from("project_images").insert({
-            project_id: project.id,
-            storage_path: u.storage_path,
+          await callApi("insert_image", {
+            projectId,
+            storagePath: u.storage_path,
             url: u.url,
           });
         }
       }
-    } else {
-      // Insert new project
-      const { data: newProject, error: insertError } = await supabase
-        .from("projects")
-        .insert(payload)
-        .select("id")
-        .single();
-      if (insertError || !newProject) {
-        setError(insertError?.message ?? "Gagal membuat project.");
-        setLoading(false);
-        return;
-      }
 
-      // Upload images for new project
-      if (pendingFiles.length > 0) {
-        const uploaded = await uploadFiles(newProject.id, pendingFiles);
-        for (const u of uploaded) {
-          await supabase.from("project_images").insert({
-            project_id: newProject.id,
-            storage_path: u.storage_path,
-            url: u.url,
-          });
-        }
-      }
+      router.push("/zhaorukou/dashboard/projects");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+      setLoading(false);
     }
-
-    router.push("/zhaorukou/dashboard/projects");
-    router.refresh();
   }
 
   const inputClass =

@@ -35,35 +35,38 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </ContentProtectionProvider>
         </ThemeProvider>
 
-        {/* Tidio live chat — default widget, repositioned via CSS */}
+        {/* Tidio — repositioned and resized via CSS */}
         <Script
           id="tidio-script"
           src="//code.tidio.co/wallov1dqedsk4xnf8mdnzgzxmweosyf.js"
           strategy="lazyOnload"
         />
-        {/* Move Tidio above scroll-to-top button (bottom:88px right:20px) */}
         <style>{`
-          /* Scroll-to-top: bottom 88px right 20px, size 40px */
-          /* Tidio launcher ~52px, gap 12px => bottom: 88+40+12 = 140px */
+          /*
+            Scroll-to-top button: bottom:88px right:20px size:40px
+            Tidio default launcher: ~52px button
+            We place Tidio: 88 + 40 + 16(gap) = 144px from bottom, right:14px
+            Scale down to match scroll-to-top size (~40px): scale(0.72)
+          */
           #tidio-chat-iframe {
-            bottom: 140px !important;
-            right:  16px  !important;
+            bottom: 144px !important;
+            right:  14px  !important;
             transform-origin: bottom right !important;
-            transform: scale(0.82) !important;
+            transform: scale(0.72) !important;
           }
           @media (max-width: 767px) {
-            /* Mobile: above bottom nav 64px + scroll-to-top 40px + gaps = ~180px */
+            /* Mobile: above bottom nav 64px + scroll-to-top 40px + 16gap = 120px */
             #tidio-chat-iframe {
               bottom: 180px !important;
-              right:  12px  !important;
-              transform: scale(0.75) !important;
+              right:  10px  !important;
+              transform: scale(0.68) !important;
             }
           }
           @media (min-width: 768px) and (max-width: 1024px) {
             #tidio-chat-iframe {
-              bottom: 148px !important;
-              right:  14px  !important;
-              transform: scale(0.80) !important;
+              bottom: 150px !important;
+              right:  12px  !important;
+              transform: scale(0.70) !important;
             }
           }
         `}</style>
