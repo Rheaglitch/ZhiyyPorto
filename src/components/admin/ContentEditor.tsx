@@ -53,12 +53,14 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
   const [heroImgUrl,    setHeroImgUrl  ] = useState<string>((s.hero_image?.url as string) ?? "");
   const [uploadingImg,  setUploadingImg] = useState(false);
   const [editingHero,   setEditingHero ] = useState<File | null>(null);
+  const [editingHeroUrl,setEditingHeroUrl] = useState<string | undefined>(undefined);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // ── Site logo ──
   const [logoUrl,       setLogoUrl     ] = useState<string>((s.site_logo?.url as string) ?? "");
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [editingLogo,   setEditingLogo ] = useState<File | null>(null);
+  const [editingLogoUrl,setEditingLogoUrl] = useState<string | undefined>(undefined);
   const logoRef = useRef<HTMLInputElement>(null);
 
   // ── About bio ──
@@ -165,15 +167,17 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
       {editingHero && (
         <ImageEditor
           file={editingHero}
-          onDone={handleHeroEditorDone}
-          onCancel={() => setEditingHero(null)}
+          existingUrl={editingHeroUrl}
+          onDone={(f) => { setEditingHero(null); setEditingHeroUrl(undefined); handleHeroEditorDone(f); }}
+          onCancel={() => { setEditingHero(null); setEditingHeroUrl(undefined); }}
         />
       )}
       {editingLogo && (
         <ImageEditor
           file={editingLogo}
-          onDone={handleLogoEditorDone}
-          onCancel={() => setEditingLogo(null)}
+          existingUrl={editingLogoUrl}
+          onDone={(f) => { setEditingLogo(null); setEditingLogoUrl(undefined); handleLogoEditorDone(f); }}
+          onCancel={() => { setEditingLogo(null); setEditingLogoUrl(undefined); }}
         />
       )}
 
@@ -203,10 +207,9 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
               </label>
               {logoUrl && (
                 <button type="button"
-                  onClick={async () => {
-                    const f = await fetch(logoUrl).then(r => r.blob());
-                    const name = logoUrl.split("/").pop() ?? "logo.png";
-                    setEditingLogo(new File([f], name, { type: f.type }));
+                  onClick={() => {
+                    setEditingLogo(new File([], "logo-edit.png", { type: "image/png" }));
+                    setEditingLogoUrl(logoUrl);
                   }}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-dark-900 border border-blood-900/60 hover:border-blood-700 text-blood-500 hover:text-blood-400 text-xs font-mono transition-colors">
                   ✏️ Edit logo
@@ -313,10 +316,10 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
               </label>
               {heroImgUrl && (
                 <button type="button"
-                  onClick={async () => {
-                    const f = await fetch(heroImgUrl).then(r => r.blob());
-                    const name = heroImgUrl.split("/").pop() ?? "hero.png";
-                    setEditingHero(new File([f], name, { type: f.type }));
+                  onClick={() => {
+                    // Pass URL directly — ImageEditor will use it as workingUrl
+                    setEditingHero(new File([], "hero-edit.png", { type: "image/png" }));
+                    setEditingHeroUrl(heroImgUrl);
                   }}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-dark-900 border border-blood-900/60 hover:border-blood-700 text-blood-500 hover:text-blood-400 text-xs font-mono transition-colors">
                   ✏️ Edit foto

@@ -20,18 +20,52 @@ interface ImageEditorProps {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 async function urlToFile(url: string, name = "image.png"): Promise<File> {
-  const res  = await fetch(url);
-  const blob = await res.blob();
-  return new File([blob], name, { type: blob.type || "image/png" });
+  // For data URLs (base64), convert directly
+  if (url.startsWith("data:")) {
+    const res  = await fetch(url);
+    const blob = await res.blob();
+    return new File([blob], name, { type: blob.type || "image/png" });
+  }
+  // For blob URLs, convert directly
+  if (url.startsWith("blob:")) {
+    const res  = await fetch(url);
+    const blob = await res.blob();
+    return new File([blob], name, { type: blob.type || "image/png" });
+  }
+  // For external URLs (Supabase Storage), use canvas to avoid CORS
+  return new Promise((resolve, reject) => {
+    const img    = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload  = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width  = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext("2d")!.drawImage(img, 0, 0);
+      canvas.toBlob(blob => {
+        if (!blob) { reject(new Error("Canvas toBlob failed")); return; }
+        resolve(new File([blob], name, { type: "image/png" }));
+      }, "image/png");
+    };
+    img.onerror = () => reject(new Error("Image load failed"));
+    img.src     = url;
+  });
 }
 
 async function applyCrop(imageSrc: string, pixelCrop: Area, rotation = 0): Promise<Blob> {
-  const image = await createImageBitmap(await fetch(imageSrc).then(r => r.blob()));
-  const rad   = (rotation * Math.PI) / 180;
-  const sin   = Math.abs(Math.sin(rad));
-  const cos   = Math.abs(Math.cos(rad));
-  const bW    = image.width * cos + image.height * sin;
-  const bH    = image.width * sin + image.height * cos;
+  // Load image — handle both blob URLs and external URLs
+  const imgEl = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const img   = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload  = () => resolve(img);
+    img.onerror = reject;
+    img.src     = imageSrc;
+  });
+
+  const rad = (rotation * Math.PI) / 180;
+  const sin = Math.abs(Math.sin(rad));
+  const cos = Math.abs(Math.cos(rad));
+  const bW  = imgEl.naturalWidth * cos + imgEl.naturalHeight * sin;
+  const bH  = imgEl.naturalWidth * sin + imgEl.naturalHeight * cos;
 
   const canvas = document.createElement("canvas");
   canvas.width  = bW;
@@ -39,50 +73,66 @@ async function applyCrop(imageSrc: string, pixelCrop: Area, rotation = 0): Promi
   const ctx = canvas.getContext("2d")!;
   ctx.translate(bW / 2, bH / 2);
   ctx.rotate(rad);
-  ctx.drawImage(image, -image.width / 2, -image.height / 2);
+  ctx.drawImage(imgEl, -imgEl.naturalWidth / 2, -imgEl.naturalHeight / 2);
 
   const out    = document.createElement("canvas");
   out.width    = pixelCrop.width;
   out.height   = pixelCrop.height;
-  const outCtx = out.getContext("2d")!;
-  outCtx.drawImage(canvas, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height,
-                   0, 0, pixelCrop.width, pixelCrop.height);
+  out.getContext("2d")!.drawImage(canvas, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, pixelCrop.width, pixelCrop.height);
 
   return new Promise(resolve => out.toBlob(b => resolve(b!), "image/png", 0.95));
 }
 
 async function applyRotate(imageSrc: string, degrees: number): Promise<string> {
-  const image  = await createImageBitmap(await fetch(imageSrc).then(r => r.blob()));
+  const imgEl = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const img   = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload  = () => resolve(img);
+    img.onerror = reject;
+    img.src     = imageSrc;
+  });
+
   const rad    = (degrees * Math.PI) / 180;
   const sin    = Math.abs(Math.sin(rad));
   const cos    = Math.abs(Math.cos(rad));
   const canvas = document.createElement("canvas");
-  canvas.width  = image.height * sin + image.width * cos;
-  canvas.height = image.height * cos + image.width * sin;
+  canvas.width  = imgEl.naturalHeight * sin + imgEl.naturalWidth * cos;
+  canvas.height = imgEl.naturalHeight * cos + imgEl.naturalWidth * sin;
   const ctx    = canvas.getContext("2d")!;
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(rad);
-  ctx.drawImage(image, -image.width / 2, -image.height / 2);
+  ctx.drawImage(imgEl, -imgEl.naturalWidth / 2, -imgEl.naturalHeight / 2);
   return canvas.toDataURL("image/png");
 }
 
 async function removeBgApi(srcUrl: string): Promise<string> {
-  const blob = await fetch(srcUrl).then(r => r.blob());
-  const fd   = new FormData();
+  // Convert to blob first (handles CORS for external URLs via canvas)
+  let blob: Blob;
+  if (srcUrl.startsWith("data:") || srcUrl.startsWith("blob:")) {
+    blob = await fetch(srcUrl).then(r => r.blob());
+  } else {
+    // External URL — draw via canvas
+    const file = await urlToFile(srcUrl, "image.png");
+    blob = file;
+  }
+  const fd = new FormData();
   fd.append("image", blob, "image.png");
   const res  = await fetch("/api/remove-bg", { method: "POST", body: fd });
   const json = await res.json();
   if (!res.ok || json.error) throw new Error(json.error ?? "Gagal menghapus background");
-  return json.result; // base64 data URL
+  return json.result;
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function ImageEditor({ file, onDone, onCancel, existingUrl }: ImageEditorProps) {
-  // Working image — starts as the file's object URL, updates as edits applied
+  // Working image — starts as existingUrl or file's object URL
   const [workingUrl, setWorkingUrl] = useState<string>(() => {
+    // If existingUrl provided, use it directly (avoids CORS fetch issue)
     if (existingUrl) return existingUrl;
-    return URL.createObjectURL(file);
+    // Only create object URL if file has content
+    if (file.size > 0) return URL.createObjectURL(file);
+    return existingUrl ?? "";
   });
   const originalUrl = useRef(workingUrl);
 
