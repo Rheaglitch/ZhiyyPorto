@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { createAdminClient } from "@/lib/supabase/admin-client";
 import { Plus, X, Upload, Loader2, Check } from "lucide-react";
 import Image from "next/image";
+import { ImageEditor } from "@/components/admin/ImageEditor";
 
 interface ContentEditorProps {
   initialSettings: Record<string, Record<string, unknown>>;
@@ -51,11 +52,13 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
   // ── Hero image ──
   const [heroImgUrl,    setHeroImgUrl  ] = useState<string>((s.hero_image?.url as string) ?? "");
   const [uploadingImg,  setUploadingImg] = useState(false);
+  const [editingHero,   setEditingHero ] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // ── Site logo ──
   const [logoUrl,       setLogoUrl     ] = useState<string>((s.site_logo?.url as string) ?? "");
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [editingLogo,   setEditingLogo ] = useState<File | null>(null);
   const logoRef = useRef<HTMLInputElement>(null);
 
   // ── About bio ──
@@ -74,12 +77,17 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
 
   const [status, setStatus] = useState<SaveStatus>("idle");
 
-  // ── Upload hero image ──
-  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  // ── Upload hero image — open editor first ──
+  function handleHeroFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { alert("Maks 5MB"); return; }
+    if (file.size > 10 * 1024 * 1024) { alert("Maks 10MB"); return; }
+    setEditingHero(file);
+    if (fileRef.current) fileRef.current.value = "";
+  }
 
+  async function handleHeroEditorDone(editedFile: File) {
+    setEditingHero(null);
     setUploadingImg(true);
     const supabase = createAdminClient();
 
@@ -88,23 +96,27 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
       if (oldPath) await supabase.storage.from("hero").remove([oldPath]);
     }
 
-    const ext  = file.name.split(".").pop();
+    const ext  = editedFile.name.split(".").pop() ?? "png";
     const path = `hero-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("hero").upload(path, file, { upsert: true });
+    const { error } = await supabase.storage.from("hero").upload(path, editedFile, { upsert: true });
     if (error) { alert("Upload gagal: " + error.message); setUploadingImg(false); return; }
 
     const { data: pub } = supabase.storage.from("hero").getPublicUrl(path);
     setHeroImgUrl(pub.publicUrl);
     setUploadingImg(false);
-    if (fileRef.current) fileRef.current.value = "";
   }
 
-  // ── Upload site logo ──
-  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  // ── Upload site logo — open editor first ──
+  function handleLogoFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { alert("Maks 2MB"); return; }
+    if (file.size > 5 * 1024 * 1024) { alert("Maks 5MB"); return; }
+    setEditingLogo(file);
+    if (logoRef.current) logoRef.current.value = "";
+  }
 
+  async function handleLogoEditorDone(editedFile: File) {
+    setEditingLogo(null);
     setUploadingLogo(true);
     const supabase = createAdminClient();
 
@@ -113,15 +125,14 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
       if (oldPath) await supabase.storage.from("logos").remove([oldPath]);
     }
 
-    const ext  = file.name.split(".").pop();
+    const ext  = editedFile.name.split(".").pop() ?? "png";
     const path = `logo-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("logos").upload(path, file, { upsert: true });
+    const { error } = await supabase.storage.from("logos").upload(path, editedFile, { upsert: true });
     if (error) { alert("Upload logo gagal: " + error.message); setUploadingLogo(false); return; }
 
     const { data: pub } = supabase.storage.from("logos").getPublicUrl(path);
     setLogoUrl(pub.publicUrl);
     setUploadingLogo(false);
-    if (logoRef.current) logoRef.current.value = "";
   }
 
   // ── Save all ──
@@ -150,6 +161,21 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
 
   return (
     <div className="max-w-2xl space-y-0">
+      {/* ── Image Editor Modals ── */}
+      {editingHero && (
+        <ImageEditor
+          file={editingHero}
+          onDone={handleHeroEditorDone}
+          onCancel={() => setEditingHero(null)}
+        />
+      )}
+      {editingLogo && (
+        <ImageEditor
+          file={editingLogo}
+          onDone={handleLogoEditorDone}
+          onCancel={() => setEditingLogo(null)}
+        />
+      )}
 
       {/* ── Site Logo ── */}
       <Section title="Site Logo (Navbar & Footer)">
@@ -172,7 +198,7 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
               {uploadingLogo ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
               {uploadingLogo ? "Uploading..." : "Pilih logo"}
               <input ref={logoRef} type="file" accept="image/png,image/svg+xml,image/webp"
-                onChange={handleLogoUpload} className="hidden" />
+                onChange={handleLogoFileSelect} className="hidden" />
             </label>
             {logoUrl && (
               <button onClick={() => setLogoUrl("")}
@@ -268,7 +294,8 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
             <label className="flex items-center gap-2 w-fit px-4 py-2 rounded-lg bg-dark-900 border border-dark-800 hover:border-dark-700 text-dark-400 text-xs font-mono cursor-pointer transition-colors">
               {uploadingImg ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
               {uploadingImg ? "Uploading..." : "Pilih foto"}
-              <input ref={fileRef} type="file" accept="image/png,image/webp" onChange={handleImageUpload} className="hidden" />
+              <input ref={fileRef} type="file" accept="image/png,image/webp,image/jpeg"
+                onChange={handleHeroFileSelect} className="hidden" />
             </label>
             {heroImgUrl && (
               <p className="text-[10px] text-dark-700 font-mono break-all">{heroImgUrl.split("/").pop()}</p>

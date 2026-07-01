@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { HideTidio } from "@/components/admin/HideTidio";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -8,8 +9,7 @@ export const metadata: Metadata = {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      {/* Hide Tidio chatbot in admin area — only show on public pages */}
-      <style>{`#tidio-chat-iframe { display: none !important; }`}</style>
+      <HideTidio />
       {children}
     </>
   );
