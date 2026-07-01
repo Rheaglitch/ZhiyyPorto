@@ -16,7 +16,7 @@ BEGIN
       USING (true)
       WITH CHECK (true);
   END IF;
-END $$;
+END $$;la
 
 -- 2. Pastikan project_images ada RLS untuk authenticated write
 DO $$

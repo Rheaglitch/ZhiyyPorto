@@ -8,6 +8,7 @@ import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { FloatingActions } from "@/components/layout/FloatingActions";
 import { GlitchIntro } from "@/components/layout/GlitchIntro";
+import { DynamicFavicon } from "@/components/layout/DynamicFavicon";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <ContentProtectionProvider>
             <GlitchIntro />
             <ScrollProgress />
+            <DynamicFavicon />
             <BackgroundEffects />
             {children}
             <FloatingActions />

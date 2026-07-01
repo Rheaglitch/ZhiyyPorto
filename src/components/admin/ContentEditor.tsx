@@ -79,7 +79,21 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
 
   const [status, setStatus] = useState<SaveStatus>("idle");
 
-  // ── Upload hero image — open editor first ──
+  // ── Upload helper via server API ──
+  async function uploadViaServer(file: File, bucket: string, oldUrl?: string): Promise<string> {
+    const oldPath = oldUrl ? oldUrl.split(`/${bucket}/`)[1] : undefined;
+    const fd = new FormData();
+    fd.append("file",   file);
+    fd.append("bucket", bucket);
+    if (oldPath) fd.append("oldPath", oldPath);
+
+    const res  = await fetch("/api/upload-asset", { method: "POST", body: fd });
+    const json = await res.json();
+    if (!res.ok || json.error) throw new Error(json.error ?? "Upload gagal");
+    return json.url as string;
+  }
+
+  // ── Upload hero image ──
   function handleHeroFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -91,24 +105,16 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
   async function handleHeroEditorDone(editedFile: File) {
     setEditingHero(null);
     setUploadingImg(true);
-    const supabase = createAdminClient();
-
-    if (heroImgUrl) {
-      const oldPath = heroImgUrl.split("/hero/")[1];
-      if (oldPath) await supabase.storage.from("hero").remove([oldPath]);
+    try {
+      const url = await uploadViaServer(editedFile, "hero", heroImgUrl || undefined);
+      setHeroImgUrl(url);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Upload gagal");
     }
-
-    const ext  = editedFile.name.split(".").pop() ?? "png";
-    const path = `hero-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("hero").upload(path, editedFile, { upsert: true });
-    if (error) { alert("Upload gagal: " + error.message); setUploadingImg(false); return; }
-
-    const { data: pub } = supabase.storage.from("hero").getPublicUrl(path);
-    setHeroImgUrl(pub.publicUrl);
     setUploadingImg(false);
   }
 
-  // ── Upload site logo — open editor first ──
+  // ── Upload site logo ──
   function handleLogoFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -120,20 +126,12 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
   async function handleLogoEditorDone(editedFile: File) {
     setEditingLogo(null);
     setUploadingLogo(true);
-    const supabase = createAdminClient();
-
-    if (logoUrl) {
-      const oldPath = logoUrl.split("/logos/")[1];
-      if (oldPath) await supabase.storage.from("logos").remove([oldPath]);
+    try {
+      const url = await uploadViaServer(editedFile, "logos", logoUrl || undefined);
+      setLogoUrl(url);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Upload logo gagal");
     }
-
-    const ext  = editedFile.name.split(".").pop() ?? "png";
-    const path = `logo-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("logos").upload(path, editedFile, { upsert: true });
-    if (error) { alert("Upload logo gagal: " + error.message); setUploadingLogo(false); return; }
-
-    const { data: pub } = supabase.storage.from("logos").getPublicUrl(path);
-    setLogoUrl(pub.publicUrl);
     setUploadingLogo(false);
   }
 
