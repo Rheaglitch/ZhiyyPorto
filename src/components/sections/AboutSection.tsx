@@ -1,18 +1,31 @@
-import { Code2, Palette, Camera, Lightbulb } from "lucide-react";
 import { GlitchReveal } from "@/components/ui/GlitchReveal";
 
-const stats = [
-  { label: "Projects",     value: "10+" },
-  { label: "Technologies", value: "15+" },
-  { label: "Design Tools", value: "5+"  },
-  { label: "Years Active", value: "3+"  },
+// ── Icon mapping untuk traits (searchable) ──────────────────────────────────
+import {
+  Code2, Palette, Camera, Lightbulb, Brush, Music,
+  Film, Globe, Cpu, Star, Heart, Zap, BookOpen,
+  Layers, Monitor, Smartphone, Package, Pen
+} from "lucide-react";
+
+const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  Code2, Palette, Camera, Lightbulb, Brush, Music,
+  Film, Globe, Cpu, Star, Heart, Zap, BookOpen,
+  Layers, Monitor, Smartphone, Package, Pen,
+};
+
+// ── Defaults ────────────────────────────────────────────────────────────────
+const DEFAULT_ABOUT_STATS = [
+  { value: "10+", label: "Projects"    },
+  { value: "15+", label: "Technologies"},
+  { value: "5+",  label: "Design Tools"},
+  { value: "3+",  label: "Years Active"},
 ];
 
-const traits = [
-  { icon: Code2,     title: "Web Development",      desc: "Next.js, TypeScript, Supabase — bikin web yang cepat, clean, dan beneran jalan."              },
-  { icon: Palette,   title: "Design & Illustration", desc: "UI/UX dengan Figma, ilustrasi digital & tradisional, desain logo dan branding."                },
-  { icon: Camera,    title: "Visual Creative",       desc: "Animasi 2D, motion graphics, fotografi — storytelling lewat visual."                          },
-  { icon: Lightbulb, title: "Problem Solver",        desc: "Senang ngulik masalah kompleks dan nyari solusi yang paling elegan."                           },
+const DEFAULT_TRAITS = [
+  { icon: "Code2",     title: "Web Development",      desc: "Next.js, TypeScript, Supabase — bikin web yang cepat, clean, dan beneran jalan."   },
+  { icon: "Palette",   title: "Design & Illustration", desc: "UI/UX dengan Figma, ilustrasi digital & tradisional, desain logo dan branding."    },
+  { icon: "Camera",    title: "Visual Creative",       desc: "Animasi 2D, motion graphics, fotografi — storytelling lewat visual."               },
+  { icon: "Lightbulb", title: "Problem Solver",        desc: "Senang ngulik masalah kompleks dan nyari solusi yang paling elegan."               },
 ];
 
 const DEFAULT_PARAS = [
@@ -23,10 +36,14 @@ const DEFAULT_PARAS = [
 
 interface AboutSectionProps {
   paragraphs?: string[];
+  aboutStats?:  { value: string; label: string }[];
+  traits?:      { icon: string; title: string; desc: string }[];
 }
 
-export function AboutSection({ paragraphs }: AboutSectionProps) {
-  const displayParas = paragraphs && paragraphs.length > 0 ? paragraphs : DEFAULT_PARAS;
+export function AboutSection({ paragraphs, aboutStats, traits }: AboutSectionProps) {
+  const displayParas  = paragraphs  && paragraphs.length  > 0 ? paragraphs  : DEFAULT_PARAS;
+  const displayStats  = aboutStats  && aboutStats.length  > 0 ? aboutStats  : DEFAULT_ABOUT_STATS;
+  const displayTraits = traits      && traits.length       > 0 ? traits      : DEFAULT_TRAITS;
   return (
     <section id="about" className="py-20 px-6" style={{ background: "var(--bg-primary)" }}>
       <div className="max-w-6xl mx-auto">
@@ -54,7 +71,7 @@ export function AboutSection({ paragraphs }: AboutSectionProps) {
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3 pt-4">
-              {stats.map(({ label, value }, i) => (
+              {displayStats.map(({ label, value }, i) => (
                 <GlitchReveal key={label} delay={150 + i * 60}>
                   <div className="card-dark rounded-lg p-4 text-center">
                     <div className="text-2xl font-black text-gradient-blood">{value}</div>
@@ -67,17 +84,20 @@ export function AboutSection({ paragraphs }: AboutSectionProps) {
 
           {/* Traits */}
           <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {traits.map(({ icon: Icon, title, desc }, i) => (
-              <GlitchReveal key={title} delay={200 + i * 80}>
-                <div className="card-dark rounded-xl p-5 hover:border-blood-900 transition-all duration-200 group h-full">
-                  <div className="w-9 h-9 rounded-lg bg-blood-950 border border-blood-900/60 flex items-center justify-center mb-3 group-hover:bg-blood-900/60 transition-colors">
-                    <Icon size={16} className="text-blood-400" />
+            {displayTraits.map(({ icon: iconName, title, desc }, i) => {
+              const Icon = ICON_MAP[iconName] ?? Lightbulb;
+              return (
+                <GlitchReveal key={title} delay={200 + i * 80}>
+                  <div className="card-dark rounded-xl p-5 hover:border-blood-900 transition-all duration-200 group h-full">
+                    <div className="w-9 h-9 rounded-lg bg-blood-950 border border-blood-900/60 flex items-center justify-center mb-3 group-hover:bg-blood-900/60 transition-colors">
+                      <Icon size={16} className="text-blood-400" />
+                    </div>
+                    <h3 className="font-semibold text-sm mb-1.5" style={{ color: "var(--text-primary)" }}>{title}</h3>
+                    <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>{desc}</p>
                   </div>
-                  <h3 className="font-semibold text-sm mb-1.5" style={{ color: "var(--text-primary)" }}>{title}</h3>
-                  <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>{desc}</p>
-                </div>
-              </GlitchReveal>
-            ))}
+                </GlitchReveal>
+              );
+            })}
           </div>
         </div>
       </div>

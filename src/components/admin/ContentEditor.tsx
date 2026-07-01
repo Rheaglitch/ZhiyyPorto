@@ -63,7 +63,23 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
   const [editingLogoUrl,setEditingLogoUrl] = useState<string | undefined>(undefined);
   const logoRef = useRef<HTMLInputElement>(null);
 
-  // ── About bio ──
+  // ── About stats ──
+  const [aboutStats, setAboutStats] = useState<{ value: string; label: string }[]>(
+    (s.about_stats?.items as { value: string; label: string }[]) ??
+    [{ value: "10+", label: "Projects" }, { value: "15+", label: "Technologies" },
+     { value: "5+",  label: "Design Tools" }, { value: "3+", label: "Years Active" }]
+  );
+
+  // ── About traits ──
+  const [aboutTraits, setAboutTraits] = useState<{ icon: string; title: string; desc: string }[]>(
+    (s.about_traits?.items as { icon: string; title: string; desc: string }[]) ??
+    [
+      { icon: "Code2",     title: "Web Development",      desc: "Next.js, TypeScript, Supabase — bikin web yang cepat, clean, dan beneran jalan." },
+      { icon: "Palette",   title: "Design & Illustration", desc: "UI/UX dengan Figma, ilustrasi digital & tradisional, desain logo dan branding."  },
+      { icon: "Camera",    title: "Visual Creative",       desc: "Animasi 2D, motion graphics, fotografi — storytelling lewat visual."             },
+      { icon: "Lightbulb", title: "Problem Solver",        desc: "Senang ngulik masalah kompleks dan nyari solusi yang paling elegan."             },
+    ]
+  );
   const [aboutParas, setAboutParas] = useState<string[]>(
     (s.about_bio?.paragraphs as string[]) ??
     ["Halo! Aku Reavlenia Arezha, seorang creative multidisiplin yang bergerak di dunia digital."]
@@ -145,10 +161,12 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
       { key: "hero_roles",  value: { roles } },
       { key: "hero_bio",    value: { text: heroBio } },
       { key: "hero_stats",  value: { items: stats } },
-      { key: "hero_image",  value: { url: heroImgUrl } },
-      { key: "site_logo",   value: { url: logoUrl } },
-      { key: "about_bio",   value: { paragraphs: aboutParas } },
-      { key: "contact_info",value: { email, github, instagram, linkedin, location } },
+      { key: "hero_image",    value: { url: heroImgUrl } },
+      { key: "site_logo",     value: { url: logoUrl } },
+      { key: "about_bio",     value: { paragraphs: aboutParas } },
+      { key: "about_stats",   value: { items: aboutStats } },
+      { key: "about_traits",  value: { items: aboutTraits } },
+      { key: "contact_info",  value: { email, github, instagram, linkedin, location } },
     ];
 
     for (const u of updates) {
@@ -271,7 +289,10 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
         </div>
       </Section>
 
-      <Section title="Hero — Stats">
+      <Section title="Hero — Stats (Angka di hero section)">
+        <p className="text-[10px] text-dark-600 font-mono mb-2">
+          {`// Stats yang tampil di hero section (10+ Projects, 3+ Years, dll) — value = angka/teks, label = keterangan`}
+        </p>
         <div className="space-y-2">
           {stats.map((st, i) => (
             <div key={i} className="flex items-center gap-2">
@@ -328,6 +349,79 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
               <p className="text-[10px] text-dark-700 font-mono break-all">{heroImgUrl.split("/").pop()}</p>
             )}
           </div>
+        </div>
+      </Section>
+
+      <Section title="About — Stats (Angka di bawah bio)">
+        <p className="text-[10px] text-dark-600 font-mono mb-2">
+          {`// Stats yang tampil di section "Siapa Aku?" — value (angka/teks) + label keterangan`}
+        </p>
+        <div className="space-y-2">
+          {aboutStats.map((st, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input value={st.value}
+                onChange={e => setAboutStats(prev => prev.map((v, idx) => idx === i ? { ...v, value: e.target.value } : v))}
+                className={`${inputCls} w-24`} placeholder="10+" />
+              <input value={st.label}
+                onChange={e => setAboutStats(prev => prev.map((v, idx) => idx === i ? { ...v, label: e.target.value } : v))}
+                className={`${inputCls} flex-1`} placeholder="Label (misal: Projects)" />
+              <button type="button" onClick={() => setAboutStats(prev => prev.filter((_, idx) => idx !== i))}
+                className="text-dark-600 hover:text-blood-400 p-1.5 rounded hover:bg-blood-950/50 transition-colors">
+                <X size={13} />
+              </button>
+            </div>
+          ))}
+          <button type="button" onClick={() => setAboutStats(prev => [...prev, { value: "", label: "" }])}
+            className="flex items-center gap-2 text-xs text-dark-500 hover:text-blood-400 font-mono transition-colors">
+            <Plus size={12} /> Tambah stat
+          </button>
+        </div>
+      </Section>
+
+      <Section title="About — Keahlian (Trait Cards)">
+        <p className="text-[10px] text-dark-600 font-mono mb-2">
+          {`// Card keahlian yang tampil di section "Siapa Aku?" — icon, judul, deskripsi`}
+        </p>
+        <p className="text-[10px] text-dark-600 font-mono mb-3">
+          {`// Icon tersedia: Code2, Palette, Camera, Lightbulb, Brush, Music, Film, Globe, Cpu, Star, Heart, Zap, BookOpen, Layers, Monitor, Smartphone, Package, Pen`}
+        </p>
+        <div className="space-y-4">
+          {aboutTraits.map((tr, i) => (
+            <div key={i} className="card-dark rounded-xl p-4 border border-dark-800 space-y-2">
+              <div className="flex items-center gap-2 justify-between">
+                <span className="text-[10px] font-mono text-dark-600">Trait #{i + 1}</span>
+                <button type="button" onClick={() => setAboutTraits(prev => prev.filter((_, idx) => idx !== i))}
+                  className="text-dark-600 hover:text-blood-400 p-1 rounded transition-colors">
+                  <X size={12} />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className={labelCls}>Icon Name</label>
+                  <input value={tr.icon}
+                    onChange={e => setAboutTraits(prev => prev.map((v, idx) => idx === i ? { ...v, icon: e.target.value } : v))}
+                    className={inputCls} placeholder="Code2" />
+                </div>
+                <div>
+                  <label className={labelCls}>Judul</label>
+                  <input value={tr.title}
+                    onChange={e => setAboutTraits(prev => prev.map((v, idx) => idx === i ? { ...v, title: e.target.value } : v))}
+                    className={inputCls} placeholder="Web Development" />
+                </div>
+              </div>
+              <div>
+                <label className={labelCls}>Deskripsi</label>
+                <textarea value={tr.desc} rows={2}
+                  onChange={e => setAboutTraits(prev => prev.map((v, idx) => idx === i ? { ...v, desc: e.target.value } : v))}
+                  className={`${inputCls} resize-none`} placeholder="Deskripsi singkat keahlian..." />
+              </div>
+            </div>
+          ))}
+          <button type="button"
+            onClick={() => setAboutTraits(prev => [...prev, { icon: "Star", title: "", desc: "" }])}
+            className="flex items-center gap-2 text-xs text-dark-500 hover:text-blood-400 font-mono transition-colors">
+            <Plus size={12} /> Tambah trait
+          </button>
         </div>
       </Section>
 
