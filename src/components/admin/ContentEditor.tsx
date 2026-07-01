@@ -290,25 +290,33 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
       </Section>
 
       <Section title="Hero — Stats (Angka di hero section)">
-        <p className="text-[10px] text-dark-600 font-mono mb-2">
-          {`// Stats yang tampil di hero section (10+ Projects, 3+ Years, dll) — value = angka/teks, label = keterangan`}
+        <p className="text-[10px] text-dark-600 font-mono mb-3">
+          {`// Contoh: Value = "10+" | Label = "Projects" → tampil sebagai "10+ / PROJECTS" di hero`}
         </p>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {stats.map((st, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <input value={st.value} onChange={e => setStats(prev => prev.map((v, idx) => idx === i ? { ...v, value: e.target.value } : v))}
-                className={`${inputCls} w-24`} placeholder="10+" />
-              <input value={st.label} onChange={e => setStats(prev => prev.map((v, idx) => idx === i ? { ...v, label: e.target.value } : v))}
-                className={`${inputCls} flex-1`} placeholder="Projects" />
+            <div key={i} className="flex items-end gap-2">
+              <div className="flex-none w-28">
+                {i === 0 && <label className={labelCls}>Angka / Value</label>}
+                <input value={st.value}
+                  onChange={e => setStats(prev => prev.map((v, idx) => idx === i ? { ...v, value: e.target.value } : v))}
+                  className={inputCls} placeholder='mis: "10+" atau "3 Tahun"' />
+              </div>
+              <div className="flex-1">
+                {i === 0 && <label className={labelCls}>Label / Keterangan</label>}
+                <input value={st.label}
+                  onChange={e => setStats(prev => prev.map((v, idx) => idx === i ? { ...v, label: e.target.value } : v))}
+                  className={inputCls} placeholder='mis: "Projects", "Years", "Skills"' />
+              </div>
               <button type="button" onClick={() => setStats(prev => prev.filter((_, idx) => idx !== i))}
-                className="text-dark-600 hover:text-blood-400 p-1.5 rounded hover:bg-blood-950/50 transition-colors">
+                className="text-dark-600 hover:text-blood-400 p-2 rounded hover:bg-blood-950/50 transition-colors mb-0.5">
                 <X size={13} />
               </button>
             </div>
           ))}
           <button type="button" onClick={() => setStats(prev => [...prev, { value: "", label: "" }])}
             className="flex items-center gap-2 text-xs text-dark-500 hover:text-blood-400 font-mono transition-colors">
-            <Plus size={12} /> Tambah stat
+            <Plus size={12} /> Tambah stat baru
           </button>
         </div>
       </Section>
@@ -352,28 +360,34 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
         </div>
       </Section>
 
-      <Section title="About — Stats (Angka di bawah bio)">
-        <p className="text-[10px] text-dark-600 font-mono mb-2">
-          {`// Stats yang tampil di section "Siapa Aku?" — value (angka/teks) + label keterangan`}
+      <Section title="About — Stats (Angka di section Siapa Aku)">
+        <p className="text-[10px] text-dark-600 font-mono mb-3">
+          {`// Contoh: Value = "15+" | Label = "Technologies" → tampil sebagai kotak stat di About section`}
         </p>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {aboutStats.map((st, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <input value={st.value}
-                onChange={e => setAboutStats(prev => prev.map((v, idx) => idx === i ? { ...v, value: e.target.value } : v))}
-                className={`${inputCls} w-24`} placeholder="10+" />
-              <input value={st.label}
-                onChange={e => setAboutStats(prev => prev.map((v, idx) => idx === i ? { ...v, label: e.target.value } : v))}
-                className={`${inputCls} flex-1`} placeholder="Label (misal: Projects)" />
+            <div key={i} className="flex items-end gap-2">
+              <div className="flex-none w-28">
+                {i === 0 && <label className={labelCls}>Angka / Value</label>}
+                <input value={st.value}
+                  onChange={e => setAboutStats(prev => prev.map((v, idx) => idx === i ? { ...v, value: e.target.value } : v))}
+                  className={inputCls} placeholder='mis: "15+" atau "5 Tools"' />
+              </div>
+              <div className="flex-1">
+                {i === 0 && <label className={labelCls}>Label / Keterangan</label>}
+                <input value={st.label}
+                  onChange={e => setAboutStats(prev => prev.map((v, idx) => idx === i ? { ...v, label: e.target.value } : v))}
+                  className={inputCls} placeholder='mis: "Technologies", "Design Tools"' />
+              </div>
               <button type="button" onClick={() => setAboutStats(prev => prev.filter((_, idx) => idx !== i))}
-                className="text-dark-600 hover:text-blood-400 p-1.5 rounded hover:bg-blood-950/50 transition-colors">
+                className="text-dark-600 hover:text-blood-400 p-2 rounded hover:bg-blood-950/50 transition-colors mb-0.5">
                 <X size={13} />
               </button>
             </div>
           ))}
           <button type="button" onClick={() => setAboutStats(prev => [...prev, { value: "", label: "" }])}
             className="flex items-center gap-2 text-xs text-dark-500 hover:text-blood-400 font-mono transition-colors">
-            <Plus size={12} /> Tambah stat
+            <Plus size={12} /> Tambah stat baru
           </button>
         </div>
       </Section>
