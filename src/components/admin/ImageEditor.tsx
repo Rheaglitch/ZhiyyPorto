@@ -127,27 +127,45 @@ async function removeBgApi(srcUrl: string): Promise<string> {
 
 export function ImageEditor({ file, onDone, onCancel, existingUrl }: ImageEditorProps) {
   // Working image — starts as existingUrl or file's object URL
-  const [workingUrl, setWorkingUrl] = useState<string>(() => {
-    // If existingUrl provided, use it directly (avoids CORS fetch issue)
-    if (existingUrl) return existingUrl;
-    // Only create object URL if file has content
-    if (file.size > 0) return URL.createObjectURL(file);
-    return existingUrl ?? "";
-  });
-  const originalUrl = useRef(workingUrl);
+  const [workingUrl, setWorkingUrl] = useState<string>("");
+  const [loading,    setLoading   ] = useState(true);
+  const originalUrl = useRef("");
 
+  // ── Init: load image via proxy if external URL ──
   useEffect(() => {
+    async function init() {
+      setLoading(true);
+      try {
+        let blobUrl: string;
+        if (existingUrl) {
+          // Load via proxy to avoid CORS
+          const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(existingUrl)}`;
+          const res  = await fetch(proxyUrl);
+          const blob = await res.blob();
+          blobUrl = URL.createObjectURL(blob);
+        } else {
+          blobUrl = URL.createObjectURL(file);
+        }
+        originalUrl.current = blobUrl;
+        setWorkingUrl(blobUrl);
+      } catch {
+        // fallback
+        const url = existingUrl ?? URL.createObjectURL(file);
+        originalUrl.current = url;
+        setWorkingUrl(url);
+      }
+      setLoading(false);
+    }
+    init();
     return () => {
-      // Cleanup blob URLs on unmount (but not the original existingUrl)
-      if (!existingUrl && originalUrl.current.startsWith("blob:")) {
+      if (originalUrl.current.startsWith("blob:")) {
         URL.revokeObjectURL(originalUrl.current);
       }
     };
-  }, [existingUrl]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [activeTab, setActiveTab] = useState<"crop" | "rotate" | "removebg">("crop");
-
-  // Crop state
   const [crop,             setCrop            ] = useState<Point>({ x: 0, y: 0 });
   const [zoom,             setZoom            ] = useState(1);
   const [rotation,         setRotation        ] = useState(0);
@@ -266,7 +284,12 @@ export function ImageEditor({ file, onDone, onCancel, existingUrl }: ImageEditor
 
         {/* Preview area */}
         <div className="relative bg-[#0a0a0a] overflow-hidden shrink-0" style={{ height: 320 }}>
-          {activeTab === "crop" ? (
+          {loading || !workingUrl ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader2 size={24} className="animate-spin text-blood-500" />
+              <span className="ml-2 text-xs text-dark-500 font-mono">Memuat gambar...</span>
+            </div>
+          ) : activeTab === "crop" ? (
             <Cropper
               image={workingUrl}
               crop={crop}
