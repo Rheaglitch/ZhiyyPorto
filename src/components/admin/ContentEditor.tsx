@@ -194,12 +194,25 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
             <p className="text-[10px] text-dark-600 font-mono">
               Logo ini akan tampil di navbar dan footer. Gunakan format PNG transparan atau SVG.
             </p>
-            <label className="flex items-center gap-2 w-fit px-4 py-2 rounded-lg bg-dark-900 border border-dark-800 hover:border-dark-700 text-dark-400 text-xs font-mono cursor-pointer transition-colors">
-              {uploadingLogo ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
-              {uploadingLogo ? "Uploading..." : "Pilih logo"}
-              <input ref={logoRef} type="file" accept="image/png,image/svg+xml,image/webp"
-                onChange={handleLogoFileSelect} className="hidden" />
-            </label>
+            <div className="flex items-center gap-2 flex-wrap">
+              <label className="flex items-center gap-2 w-fit px-4 py-2 rounded-lg bg-dark-900 border border-dark-800 hover:border-dark-700 text-dark-400 text-xs font-mono cursor-pointer transition-colors">
+                {uploadingLogo ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                {uploadingLogo ? "Uploading..." : "Pilih logo"}
+                <input ref={logoRef} type="file" accept="image/png,image/svg+xml,image/webp"
+                  onChange={handleLogoFileSelect} className="hidden" />
+              </label>
+              {logoUrl && (
+                <button type="button"
+                  onClick={async () => {
+                    const f = await fetch(logoUrl).then(r => r.blob());
+                    const name = logoUrl.split("/").pop() ?? "logo.png";
+                    setEditingLogo(new File([f], name, { type: f.type }));
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-dark-900 border border-blood-900/60 hover:border-blood-700 text-blood-500 hover:text-blood-400 text-xs font-mono transition-colors">
+                  ✏️ Edit logo
+                </button>
+              )}
+            </div>
             {logoUrl && (
               <button onClick={() => setLogoUrl("")}
                 className="text-[10px] text-dark-600 hover:text-blood-400 font-mono transition-colors">
@@ -290,13 +303,26 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
             </div>
           )}
           <div className="flex-1 space-y-2">
-            <label className={labelCls}>Upload foto baru (PNG tanpa bg, maks 5MB)</label>
-            <label className="flex items-center gap-2 w-fit px-4 py-2 rounded-lg bg-dark-900 border border-dark-800 hover:border-dark-700 text-dark-400 text-xs font-mono cursor-pointer transition-colors">
-              {uploadingImg ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
-              {uploadingImg ? "Uploading..." : "Pilih foto"}
-              <input ref={fileRef} type="file" accept="image/png,image/webp,image/jpeg"
-                onChange={handleHeroFileSelect} className="hidden" />
-            </label>
+            <label className={labelCls}>Upload foto baru (PNG tanpa bg, maks 10MB)</label>
+            <div className="flex items-center gap-2 flex-wrap">
+              <label className="flex items-center gap-2 w-fit px-4 py-2 rounded-lg bg-dark-900 border border-dark-800 hover:border-dark-700 text-dark-400 text-xs font-mono cursor-pointer transition-colors">
+                {uploadingImg ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                {uploadingImg ? "Uploading..." : "Pilih foto"}
+                <input ref={fileRef} type="file" accept="image/png,image/webp,image/jpeg"
+                  onChange={handleHeroFileSelect} className="hidden" />
+              </label>
+              {heroImgUrl && (
+                <button type="button"
+                  onClick={async () => {
+                    const f = await fetch(heroImgUrl).then(r => r.blob());
+                    const name = heroImgUrl.split("/").pop() ?? "hero.png";
+                    setEditingHero(new File([f], name, { type: f.type }));
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-dark-900 border border-blood-900/60 hover:border-blood-700 text-blood-500 hover:text-blood-400 text-xs font-mono transition-colors">
+                  ✏️ Edit foto
+                </button>
+              )}
+            </div>
             {heroImgUrl && (
               <p className="text-[10px] text-dark-700 font-mono break-all">{heroImgUrl.split("/").pop()}</p>
             )}
