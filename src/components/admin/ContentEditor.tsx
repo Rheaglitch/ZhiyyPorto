@@ -92,14 +92,24 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
   const [skillsTitleAccent, setSkillsTitleAccent] = useState(sh.titleAccent ?? "Tools");
   const [skillsSubtitle,    setSkillsSubtitle   ] = useState(sh.subtitle    ?? "Dari kode sampai kanvas — tools yang aku kuasai.");
 
-  // ── Contact ──
-  const ci = s.contact_info as Record<string, string> ?? {};
-  const [email,     setEmail    ] = useState(ci.email     ?? "");
-  const [github,    setGithub   ] = useState(ci.github    ?? "");
-  const [instagram, setInstagram] = useState(ci.instagram ?? "");
-  const [linkedin,  setLinkedin ] = useState(ci.linkedin  ?? "");
-  const [location,  setLocation ] = useState(ci.location  ?? "Indonesia");
-  const [waNumber,  setWaNumber ] = useState(ci.wa_number ?? "");
+  // ── Contact — social links (dynamic) ──
+  const ci = s.contact_info as Record<string, unknown> ?? {};
+
+  // Migrate legacy flat structure → new socialLinks array
+  const defaultLinks = [
+    { id: "1", label: "Email",     icon: "mail",      href: `mailto:${(ci.email as string) ?? ""}`,         value: (ci.email     as string) ?? "" },
+    { id: "2", label: "GitHub",    icon: "github",    href: (ci.github    as string) ?? "https://github.com/",    value: ((ci.github    as string) ?? "").replace("https://","") },
+    { id: "3", label: "LinkedIn",  icon: "linkedin",  href: (ci.linkedin  as string) ?? "https://linkedin.com/",  value: ((ci.linkedin  as string) ?? "").replace("https://","") },
+    { id: "4", label: "Instagram", icon: "instagram", href: (ci.instagram as string) ?? "https://instagram.com/", value: ((ci.instagram as string) ?? "").replace("https://","") },
+  ];
+  const [socialLinks, setSocialLinks] = useState<{ id: string; label: string; icon: string; href: string; value: string }[]>(
+    (ci.socialLinks as { id: string; label: string; icon: string; href: string; value: string }[]) ?? defaultLinks
+  );
+  const [location,     setLocation    ] = useState<string>((ci.location as string)     ?? "Indonesia");
+  const [showLocation, setShowLocation] = useState<boolean>((ci.showLocation as boolean) !== false);
+  const [mapsUrl,      setMapsUrl     ] = useState<string>((ci.mapsUrl   as string)    ?? "");
+  const [showMaps,     setShowMaps    ] = useState<boolean>((ci.showMaps  as boolean)  === true);
+  const [waNumber,     setWaNumber    ] = useState<string>((ci.wa_number as string)    ?? "");
 
   const [status, setStatus] = useState<SaveStatus>("idle");
 
@@ -174,7 +184,7 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
       { key: "about_bio",     value: { paragraphs: aboutParas } },
       { key: "about_stats",   value: { items: aboutStats } },
       { key: "about_traits",  value: { items: aboutTraits } },
-      { key: "contact_info", value: { email, github, instagram, linkedin, location, wa_number: waNumber } },
+      { key: "contact_info", value: { socialLinks, location, showLocation, mapsUrl, showMaps, wa_number: waNumber } },
       { key: "skills_heading", value: { label: skillsLabel, titleMain: skillsTitleMain, titleAccent: skillsTitleAccent, subtitle: skillsSubtitle } },
     ];
 
@@ -507,20 +517,131 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
         </div>
       </Section>
 
-      <Section title="Contact — Info">
-        {[
-          { label: "Email",     value: email,     set: setEmail,     placeholder: "email@example.com"          },
-          { label: "GitHub",    value: github,    set: setGithub,    placeholder: "https://github.com/..."     },
-          { label: "Instagram", value: instagram, set: setInstagram, placeholder: "https://instagram.com/..." },
-          { label: "LinkedIn",  value: linkedin,  set: setLinkedin,  placeholder: "https://linkedin.com/..."  },
-          { label: "Location",        value: location,  set: setLocation,  placeholder: "Indonesia"                  },
-          { label: "No. WA Notifikasi", value: waNumber, set: setWaNumber, placeholder: "628xxxxxxxxxx (tanpa + atau 0)" },
-        ].map(({ label, value, set, placeholder }) => (
-          <div key={label}>
-            <label className={labelCls}>{label}</label>
-            <input value={value} onChange={e => set(e.target.value)} className={inputCls} placeholder={placeholder} />
+      <Section title="Contact — Social Links">
+        <p className="text-[10px] text-dark-600 font-mono mb-1">
+          {`// Jika lebih dari 4 link → tampil sebagai icon-only dengan tooltip hover`}
+        </p>
+        <p className="text-[10px] text-dark-600 font-mono mb-3">
+          {`// Icon tersedia: mail, github, linkedin, instagram, twitter, youtube, facebook, twitch, tiktok, dribbble, figma, phone, globe, link`}
+        </p>
+        <div className="space-y-3">
+          {socialLinks.map((lnk, i) => (
+            <div key={lnk.id} className="card-dark rounded-xl p-4 border border-dark-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono text-dark-600">Link #{i + 1}</span>
+                <button type="button"
+                  onClick={() => setSocialLinks(prev => prev.filter((_, idx) => idx !== i))}
+                  className="text-dark-600 hover:text-blood-400 p-1 rounded transition-colors">
+                  <X size={12} />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className={labelCls}>Label (nama sosmed)</label>
+                  <input value={lnk.label}
+                    onChange={e => setSocialLinks(prev => prev.map((v, idx) => idx === i ? { ...v, label: e.target.value } : v))}
+                    className={inputCls} placeholder="Instagram" />
+                </div>
+                <div>
+                  <label className={labelCls}>Icon</label>
+                  <select value={lnk.icon}
+                    onChange={e => setSocialLinks(prev => prev.map((v, idx) => idx === i ? { ...v, icon: e.target.value } : v))}
+                    className={`${inputCls} cursor-pointer`}>
+                    {["mail","github","linkedin","instagram","twitter","youtube","facebook","twitch","tiktok","dribbble","figma","phone","globe","link"].map(ic => (
+                      <option key={ic} value={ic}>{ic}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className={labelCls}>URL / Link</label>
+                <input value={lnk.href}
+                  onChange={e => setSocialLinks(prev => prev.map((v, idx) => idx === i ? { ...v, href: e.target.value, value: e.target.value.replace(/^mailto:/,"").replace("https://","") } : v))}
+                  className={inputCls} placeholder="https://instagram.com/username atau mailto:email@gmail.com" />
+              </div>
+              <div>
+                <label className={labelCls}>Teks yang ditampilkan</label>
+                <input value={lnk.value}
+                  onChange={e => setSocialLinks(prev => prev.map((v, idx) => idx === i ? { ...v, value: e.target.value } : v))}
+                  className={inputCls} placeholder="instagram.com/username" />
+              </div>
+            </div>
+          ))}
+          <button type="button"
+            onClick={() => setSocialLinks(prev => [...prev, { id: String(Date.now()), label: "", icon: "link", href: "", value: "" }])}
+            className="flex items-center gap-2 text-xs text-dark-500 hover:text-blood-400 font-mono transition-colors">
+            <Plus size={12} /> Tambah link
+          </button>
+        </div>
+        {socialLinks.length > 4 && (
+          <p className="text-[10px] text-blood-700 font-mono mt-2">
+            ⚡ {socialLinks.length} link — tampil sebagai icon-only dengan tooltip hover
+          </p>
+        )}
+      </Section>
+
+      <Section title="Contact — Lokasi">
+        <div className="flex items-center gap-3 mb-3">
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <div
+              onClick={() => setShowLocation(v => !v)}
+              className={cn("w-9 h-5 rounded-full transition-colors relative cursor-pointer",
+                showLocation ? "bg-blood-700" : "bg-dark-800")}>
+              <div className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all",
+                showLocation ? "left-4" : "left-0.5")} />
+            </div>
+            <span className="text-xs font-mono text-dark-400">Tampilkan lokasi</span>
+          </label>
+        </div>
+        {showLocation && (
+          <div>
+            <label className={labelCls}>Nama lokasi</label>
+            <input value={location} onChange={e => setLocation(e.target.value)}
+              className={inputCls} placeholder="Indonesia" />
           </div>
-        ))}
+        )}
+
+        <div className="border-t border-dark-800 mt-4 pt-4">
+          <div className="flex items-center gap-3 mb-3">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <div
+                onClick={() => setShowMaps(v => !v)}
+                className={cn("w-9 h-5 rounded-full transition-colors relative cursor-pointer",
+                  showMaps ? "bg-blood-700" : "bg-dark-800")}>
+                <div className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all",
+                  showMaps ? "left-4" : "left-0.5")} />
+              </div>
+              <span className="text-xs font-mono text-dark-400">Tampilkan Google Maps embed</span>
+            </label>
+          </div>
+          {showMaps && (
+            <div className="space-y-2">
+              <div>
+                <label className={labelCls}>Google Maps Embed URL</label>
+                <input value={mapsUrl} onChange={e => setMapsUrl(e.target.value)}
+                  className={inputCls}
+                  placeholder="https://www.google.com/maps/embed?pb=..." />
+                <p className="text-[10px] text-dark-700 font-mono mt-1">
+                  Cara dapat URL: Google Maps → Share → Embed a map → salin src dari iframe
+                </p>
+              </div>
+              {mapsUrl && (
+                <div className="rounded-lg overflow-hidden border border-dark-800 mt-2">
+                  <iframe src={mapsUrl} width="100%" height="150" style={{ border: 0, filter: "invert(90%) hue-rotate(180deg) saturate(0.8)" }}
+                    allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="Maps preview" />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </Section>
+
+      <Section title="Contact — WA Notifikasi">
+        <div>
+          <label className={labelCls}>No. WA untuk terima notifikasi pesan masuk</label>
+          <input value={waNumber} onChange={e => setWaNumber(e.target.value)}
+            className={inputCls} placeholder="628xxxxxxxxxx (tanpa + atau 0)" />
+        </div>
       </Section>
 
       {/* Save button */}

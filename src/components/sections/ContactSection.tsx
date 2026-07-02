@@ -1,55 +1,98 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Github, Linkedin, Instagram, MapPin, Check, Loader2, Phone, MessageSquare } from "lucide-react";
+import {
+  Mail, Github, Linkedin, Instagram, Twitter, Youtube, Globe,
+  Phone, MessageSquare, MapPin, Check, Loader2, ExternalLink,
+  Facebook, Twitch, Music2, Dribbble, Figma, Link,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ── Country codes list ────────────────────────────────────────────────────────
 const COUNTRIES = [
-  { code: "62",  flag: "🇮🇩", name: "Indonesia"     },
-  { code: "1",   flag: "🇺🇸", name: "USA/Canada"    },
-  { code: "44",  flag: "🇬🇧", name: "UK"            },
-  { code: "61",  flag: "🇦🇺", name: "Australia"     },
-  { code: "65",  flag: "🇸🇬", name: "Singapore"     },
-  { code: "60",  flag: "🇲🇾", name: "Malaysia"      },
-  { code: "66",  flag: "🇹🇭", name: "Thailand"      },
-  { code: "63",  flag: "🇵🇭", name: "Philippines"   },
-  { code: "84",  flag: "🇻🇳", name: "Vietnam"       },
-  { code: "82",  flag: "🇰🇷", name: "South Korea"   },
-  { code: "81",  flag: "🇯🇵", name: "Japan"         },
-  { code: "86",  flag: "🇨🇳", name: "China"         },
-  { code: "91",  flag: "🇮🇳", name: "India"         },
-  { code: "49",  flag: "🇩🇪", name: "Germany"       },
-  { code: "33",  flag: "🇫🇷", name: "France"        },
-  { code: "39",  flag: "🇮🇹", name: "Italy"         },
-  { code: "34",  flag: "🇪🇸", name: "Spain"         },
-  { code: "55",  flag: "🇧🇷", name: "Brazil"        },
-  { code: "7",   flag: "🇷🇺", name: "Russia"        },
-  { code: "27",  flag: "🇿🇦", name: "South Africa"  },
-  { code: "971", flag: "🇦🇪", name: "UAE"           },
-  { code: "966", flag: "🇸🇦", name: "Saudi Arabia"  },
-  { code: "20",  flag: "🇪🇬", name: "Egypt"         },
-  { code: "234", flag: "🇳🇬", name: "Nigeria"       },
-  { code: "254", flag: "🇰🇪", name: "Kenya"         },
+  { code: "62",  flag: "🇮🇩", name: "Indonesia"    },
+  { code: "1",   flag: "🇺🇸", name: "USA/Canada"   },
+  { code: "44",  flag: "🇬🇧", name: "UK"           },
+  { code: "61",  flag: "🇦🇺", name: "Australia"    },
+  { code: "65",  flag: "🇸🇬", name: "Singapore"    },
+  { code: "60",  flag: "🇲🇾", name: "Malaysia"     },
+  { code: "66",  flag: "🇹🇭", name: "Thailand"     },
+  { code: "63",  flag: "🇵🇭", name: "Philippines"  },
+  { code: "84",  flag: "🇻🇳", name: "Vietnam"      },
+  { code: "82",  flag: "🇰🇷", name: "South Korea"  },
+  { code: "81",  flag: "🇯🇵", name: "Japan"        },
+  { code: "86",  flag: "🇨🇳", name: "China"        },
+  { code: "91",  flag: "🇮🇳", name: "India"        },
+  { code: "49",  flag: "🇩🇪", name: "Germany"      },
+  { code: "33",  flag: "🇫🇷", name: "France"       },
+  { code: "55",  flag: "🇧🇷", name: "Brazil"       },
+  { code: "971", flag: "🇦🇪", name: "UAE"          },
+  { code: "966", flag: "🇸🇦", name: "Saudi Arabia" },
 ];
 
+// ── Icon map — maps icon key to Lucide component ──────────────────────────────
+const ICON_MAP: Record<string, React.ElementType> = {
+  mail:      Mail,
+  github:    Github,
+  linkedin:  Linkedin,
+  instagram: Instagram,
+  twitter:   Twitter,
+  youtube:   Youtube,
+  facebook:  Facebook,
+  twitch:    Twitch,
+  tiktok:    Music2,
+  dribbble:  Dribbble,
+  figma:     Figma,
+  phone:     Phone,
+  globe:     Globe,
+  link:      Link,
+};
+
+export interface SocialLink {
+  id:    string;
+  label: string;        // "Email", "GitHub", dll
+  icon:  string;        // key dari ICON_MAP
+  href:  string;        // URL atau mailto:
+  value: string;        // teks yang ditampilkan
+}
+
+export interface ContactSectionData {
+  socialLinks?: SocialLink[];
+  location?:    string;
+  mapsUrl?:     string;   // Google Maps embed URL
+  showLocation?: boolean;
+  showMaps?:     boolean;
+}
+
 interface ContactSectionProps {
+  contactData?: ContactSectionData;
+  /** legacy fallback */
   contactInfo?: Record<string, string>;
 }
 
-export function ContactSection({ contactInfo = {} }: ContactSectionProps) {
-  const email     = contactInfo.email     || "ohmyliinnn@gmail.com";
-  const github    = contactInfo.github    || "https://github.com/Rheaglitch";
-  const instagram = contactInfo.instagram || "https://instagram.com/";
-  const linkedin  = contactInfo.linkedin  || "https://linkedin.com/";
-  const location  = contactInfo.location  || "Indonesia";
+// ── Default social links (fallback) ──────────────────────────────────────────
+const DEFAULT_LINKS: SocialLink[] = [
+  { id: "1", label: "Email",     icon: "mail",      href: "mailto:ohmyliinnn@gmail.com", value: "ohmyliinnn@gmail.com"       },
+  { id: "2", label: "GitHub",    icon: "github",    href: "https://github.com/Rheaglitch",  value: "github.com/Rheaglitch"     },
+  { id: "3", label: "LinkedIn",  icon: "linkedin",  href: "https://linkedin.com/",           value: "linkedin.com/"             },
+  { id: "4", label: "Instagram", icon: "instagram", href: "https://instagram.com/",          value: "instagram.com/"            },
+];
 
-  const contacts = [
-    { icon: Mail,      label: "Email",     value: email,                            href: `mailto:${email}`  },
-    { icon: Github,    label: "GitHub",    value: github.replace("https://",""),    href: github             },
-    { icon: Linkedin,  label: "LinkedIn",  value: linkedin.replace("https://",""),  href: linkedin           },
-    { icon: Instagram, label: "Instagram", value: instagram.replace("https://",""), href: instagram          },
+export function ContactSection({ contactData, contactInfo = {} }: ContactSectionProps) {
+  // Support legacy contactInfo shape
+  const legacyLinks: SocialLink[] = [
+    { id: "1", label: "Email",     icon: "mail",      href: `mailto:${contactInfo.email || "ohmyliinnn@gmail.com"}`, value: contactInfo.email || "ohmyliinnn@gmail.com" },
+    { id: "2", label: "GitHub",    icon: "github",    href: contactInfo.github    || "https://github.com/Rheaglitch", value: (contactInfo.github    || "").replace("https://","") },
+    { id: "3", label: "LinkedIn",  icon: "linkedin",  href: contactInfo.linkedin  || "https://linkedin.com/",         value: (contactInfo.linkedin  || "").replace("https://","") },
+    { id: "4", label: "Instagram", icon: "instagram", href: contactInfo.instagram || "https://instagram.com/",        value: (contactInfo.instagram || "").replace("https://","") },
   ];
+
+  const links       = contactData?.socialLinks ?? (Object.keys(contactInfo).length ? legacyLinks : DEFAULT_LINKS);
+  const location    = contactData?.location    ?? contactInfo.location ?? "Indonesia";
+  const mapsUrl     = contactData?.mapsUrl     ?? "";
+  const showLocation = contactData?.showLocation !== false;
+  const showMaps     = contactData?.showMaps    === true && !!mapsUrl;
+  const compact      = links.length > 4; // icon-only mode when >4 links
 
   return (
     <section id="contact" className="py-20 px-6" style={{ background: "var(--section-alt)" }}>
@@ -66,34 +109,82 @@ export function ContactSection({ contactInfo = {} }: ContactSectionProps) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          {/* Contact links */}
+          {/* ── Left: social links + location ── */}
           <div className="space-y-3">
-            {contacts.map(({ icon: Icon, label, value, href }) => (
-              <a key={label} href={href}
-                target={href.startsWith("mailto") ? undefined : "_blank"}
-                rel="noopener noreferrer"
-                className="flex items-center gap-4 p-4 rounded-xl border border-dark-800/60 bg-dark-900/20 hover:border-blood-900/60 hover:bg-dark-900/50 group transition-all duration-200">
-                <div className="w-9 h-9 rounded-lg bg-blood-950 border border-blood-900/60 flex items-center justify-center shrink-0 group-hover:bg-blood-900/60 transition-colors">
-                  <Icon size={16} className="text-blood-400" />
+
+            {/* ≤4 links: full card; >4 links: icon-only grid */}
+            {compact ? (
+              <div className="flex flex-wrap gap-3">
+                {links.map((lnk) => {
+                  const Icon = ICON_MAP[lnk.icon] ?? Link;
+                  return (
+                    <a key={lnk.id} href={lnk.href}
+                      target={lnk.href.startsWith("mailto") ? undefined : "_blank"}
+                      rel="noopener noreferrer"
+                      title={lnk.label}
+                      className="group relative w-11 h-11 rounded-xl bg-blood-950 border border-blood-900/60 flex items-center justify-center hover:bg-blood-900/60 hover:border-blood-700 transition-all duration-200">
+                      <Icon size={17} className="text-blood-400" />
+                      {/* Tooltip on hover */}
+                      <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-dark-950 border border-dark-800 text-[10px] text-dark-300 font-mono whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        {lnk.label}
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
+            ) : (
+              links.map((lnk) => {
+                const Icon = ICON_MAP[lnk.icon] ?? Link;
+                const isExternal = !lnk.href.startsWith("mailto");
+                return (
+                  <a key={lnk.id} href={lnk.href}
+                    target={isExternal ? "_blank" : undefined}
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 rounded-xl border border-dark-800/60 bg-dark-900/20 hover:border-blood-900/60 hover:bg-dark-900/50 group transition-all duration-200">
+                    <div className="w-9 h-9 rounded-lg bg-blood-950 border border-blood-900/60 flex items-center justify-center shrink-0 group-hover:bg-blood-900/60 transition-colors">
+                      <Icon size={16} className="text-blood-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] text-dark-600 font-mono">{lnk.label}</p>
+                      <p className="text-sm text-dark-300 group-hover:text-blood-400 transition-colors truncate">{lnk.value}</p>
+                    </div>
+                    {isExternal && <ExternalLink size={12} className="text-dark-700 group-hover:text-blood-700 shrink-0" />}
+                  </a>
+                );
+              })
+            )}
+
+            {/* Location */}
+            {showLocation && (
+              <div className="flex items-center gap-4 p-4 rounded-xl border border-dark-800/60 bg-dark-900/20">
+                <div className="w-9 h-9 rounded-lg bg-blood-950 border border-blood-900/60 flex items-center justify-center shrink-0">
+                  <MapPin size={16} className="text-blood-400" />
                 </div>
                 <div>
-                  <p className="text-[11px] text-dark-600 font-mono">{label}</p>
-                  <p className="text-sm text-dark-300 group-hover:text-blood-400 transition-colors">{value}</p>
+                  <p className="text-[11px] text-dark-600 font-mono">Location</p>
+                  <p className="text-sm text-dark-300">{location}</p>
                 </div>
-              </a>
-            ))}
-            <div className="flex items-center gap-4 p-4 rounded-xl border border-dark-800/60 bg-dark-900/20">
-              <div className="w-9 h-9 rounded-lg bg-blood-950 border border-blood-900/60 flex items-center justify-center shrink-0">
-                <MapPin size={16} className="text-blood-400" />
               </div>
-              <div>
-                <p className="text-[11px] text-dark-600 font-mono">Location</p>
-                <p className="text-sm text-dark-300">{location} 🇮🇩</p>
+            )}
+
+            {/* Google Maps embed */}
+            {showMaps && mapsUrl && (
+              <div className="rounded-xl overflow-hidden border border-dark-800/60 bg-dark-900/20 mt-1">
+                <iframe
+                  src={mapsUrl}
+                  width="100%"
+                  height="200"
+                  style={{ border: 0, filter: "invert(90%) hue-rotate(180deg) saturate(0.8)" }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Location map"
+                />
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Contact form */}
+          {/* ── Right: contact form ── */}
           <ContactForm />
         </div>
       </div>
@@ -105,15 +196,15 @@ export function ContactSection({ contactInfo = {} }: ContactSectionProps) {
 type ContactMethod = "email" | "whatsapp";
 
 function ContactForm() {
-  const [method,  setMethod  ] = useState<ContactMethod>("email");
-  const [name,    setName    ] = useState("");
-  const [contact, setContact ] = useState("");      // email or phone number
-  const [dialCode,setDialCode] = useState("62");    // country dial code
-  const [message, setMessage ] = useState("");
-  const [errors,  setErrors  ] = useState<Record<string, string>>({});
-  const [status,  setStatus  ] = useState<"idle"|"sending"|"sent"|"error">("idle");
-  const [errMsg,  setErrMsg  ] = useState("");
-  const [ccOpen,  setCcOpen  ] = useState(false);
+  const [method,   setMethod  ] = useState<ContactMethod>("email");
+  const [name,     setName    ] = useState("");
+  const [contact,  setContact ] = useState("");
+  const [dialCode, setDialCode] = useState("62");
+  const [message,  setMessage ] = useState("");
+  const [errors,   setErrors  ] = useState<Record<string, string>>({});
+  const [status,   setStatus  ] = useState<"idle"|"sending"|"sent"|"error">("idle");
+  const [errMsg,   setErrMsg  ] = useState("");
+  const [ccOpen,   setCcOpen  ] = useState(false);
 
   function validate() {
     const e: Record<string, string> = {};
@@ -140,20 +231,15 @@ function ContactForm() {
     setErrMsg("");
     try {
       const payload = method === "email"
-        ? { method: "email",     name, email: contact, message }
-        : { method: "whatsapp",  name, phone: `${dialCode}${contact.replace(/^0/, "").replace(/\s/g, "")}`, message };
+        ? { method: "email",    name, email: contact, message }
+        : { method: "whatsapp", name, phone: `${dialCode}${contact.replace(/^0/, "").replace(/\s/g, "")}`, message };
 
       const res  = await fetch("/api/contact", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(payload),
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
-      if (!res.ok || json.error) {
-        setErrMsg(json.error ?? "Terjadi kesalahan.");
-        setStatus("error");
-        return;
-      }
+      if (!res.ok || json.error) { setErrMsg(json.error ?? "Terjadi kesalahan."); setStatus("error"); return; }
       setStatus("sent");
       setName(""); setContact(""); setMessage("");
     } catch {
@@ -162,7 +248,7 @@ function ContactForm() {
     }
   }
 
-  const inputCls = (field: string) => cn(
+  const iCls = (field: string) => cn(
     "w-full px-4 py-2.5 rounded-lg text-sm focus:outline-none transition-colors resize-none",
     errors[field]
       ? "border-2 border-blood-700 bg-dark-900/60 text-dark-200 placeholder-dark-700"
@@ -191,35 +277,29 @@ function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
-
       {/* Method toggle */}
       <div className="flex gap-2 p-1 rounded-xl bg-dark-900/50 border border-dark-800">
         {([
-          { id: "email",     label: "Email",     icon: Mail          },
-          { id: "whatsapp",  label: "WhatsApp",  icon: MessageSquare },
+          { id: "email",    label: "Email",    icon: Mail          },
+          { id: "whatsapp", label: "WhatsApp", icon: MessageSquare },
         ] as const).map(({ id, label, icon: Icon }) => (
           <button key={id} type="button"
             onClick={() => { setMethod(id); setContact(""); setErrors({}); }}
             className={cn(
               "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-mono transition-all",
-              method === id
-                ? "bg-blood-700 text-white shadow-sm"
-                : "text-dark-500 hover:text-dark-300"
+              method === id ? "bg-blood-700 text-white shadow-sm" : "text-dark-500 hover:text-dark-300"
             )}>
-            <Icon size={12} />
-            {label}
+            <Icon size={12} />{label}
           </button>
         ))}
       </div>
 
       {/* Name */}
       <div>
-        <label className="block text-[11px] font-mono text-dark-600 mb-1.5">
-          Nama <span className="text-blood-500">*</span>
-        </label>
+        <label className="block text-[11px] font-mono text-dark-600 mb-1.5">Nama <span className="text-blood-500">*</span></label>
         <input type="text" value={name}
           onChange={e => { setName(e.target.value); setErrors(er => ({ ...er, name: "" })); }}
-          placeholder="Your name" className={inputCls("name")} />
+          placeholder="Your name" className={iCls("name")} />
         {errors.name && <p className="text-[10px] text-blood-400 mt-1 font-mono">{errors.name}</p>}
       </div>
 
@@ -228,39 +308,28 @@ function ContactForm() {
         <label className="block text-[11px] font-mono text-dark-600 mb-1.5">
           {method === "email" ? "Email" : "Nomor WhatsApp"} <span className="text-blood-500">*</span>
         </label>
-
         {method === "email" ? (
           <input type="email" value={contact}
             onChange={e => { setContact(e.target.value); setErrors(er => ({ ...er, contact: "" })); }}
-            placeholder="your@email.com" className={inputCls("contact")} />
+            placeholder="your@email.com" className={iCls("contact")} />
         ) : (
-          /* WhatsApp with country code picker */
           <div className="flex gap-2">
-            {/* Country code dropdown */}
             <div className="relative shrink-0">
-              <button type="button"
-                onClick={() => setCcOpen(!ccOpen)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-2.5 rounded-lg text-sm border transition-colors",
+              <button type="button" onClick={() => setCcOpen(!ccOpen)}
+                className={cn("flex items-center gap-1.5 px-3 py-2.5 rounded-lg text-sm border transition-colors",
                   "bg-dark-900/60 border-dark-800 text-dark-200 hover:border-blood-800 focus:outline-none",
-                  errors.contact && "border-blood-700"
-                )}>
+                  errors.contact && "border-blood-700")}>
                 <span>{selectedCountry.flag}</span>
                 <span className="font-mono text-xs">+{dialCode}</span>
                 <span className="text-dark-600 text-[10px]">▾</span>
               </button>
-
               {ccOpen && (
                 <div className="absolute top-full left-0 mt-1 z-50 w-52 max-h-60 overflow-y-auto rounded-xl border border-dark-700 bg-dark-950 shadow-2xl shadow-black/60">
                   {COUNTRIES.map(c => (
                     <button key={c.code} type="button"
                       onClick={() => { setDialCode(c.code); setCcOpen(false); }}
-                      className={cn(
-                        "w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors",
-                        dialCode === c.code
-                          ? "bg-blood-950 text-blood-400"
-                          : "text-dark-400 hover:bg-dark-900 hover:text-dark-200"
-                      )}>
+                      className={cn("w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors",
+                        dialCode === c.code ? "bg-blood-950 text-blood-400" : "text-dark-400 hover:bg-dark-900 hover:text-dark-200")}>
                       <span>{c.flag}</span>
                       <span className="font-mono text-dark-500">+{c.code}</span>
                       <span className="truncate">{c.name}</span>
@@ -269,38 +338,29 @@ function ContactForm() {
                 </div>
               )}
             </div>
-
-            {/* Phone number input */}
             <input type="tel" value={contact}
               onChange={e => { setContact(e.target.value.replace(/[^\d\s]/g, "")); setErrors(er => ({ ...er, contact: "" })); }}
-              placeholder="8xxxxxxxxxx"
-              className={cn(inputCls("contact"), "flex-1")} />
+              placeholder="8xxxxxxxxxx" className={cn(iCls("contact"), "flex-1")} />
           </div>
         )}
         {errors.contact && <p className="text-[10px] text-blood-400 mt-1 font-mono">{errors.contact}</p>}
         {method === "whatsapp" && !errors.contact && (
-          <p className="text-[10px] text-dark-700 font-mono mt-1">
-            Tanpa angka 0 di depan. Contoh: 81234567890
-          </p>
+          <p className="text-[10px] text-dark-700 font-mono mt-1">Tanpa angka 0 di depan. Contoh: 81234567890</p>
         )}
       </div>
 
       {/* Message */}
       <div>
-        <label className="block text-[11px] font-mono text-dark-600 mb-1.5">
-          Pesan <span className="text-blood-500">*</span>
-        </label>
+        <label className="block text-[11px] font-mono text-dark-600 mb-1.5">Pesan <span className="text-blood-500">*</span></label>
         <textarea rows={5} value={message}
           onChange={e => { setMessage(e.target.value); setErrors(er => ({ ...er, message: "" })); }}
           placeholder="Hei, aku mau ngobrol soal..."
-          className={inputCls("message")} />
+          className={iCls("message")} />
         {errors.message && <p className="text-[10px] text-blood-400 mt-1 font-mono">{errors.message}</p>}
       </div>
 
       {errMsg && (
-        <p className="text-xs text-blood-400 font-mono bg-blood-950/30 border border-blood-900 rounded-lg px-3 py-2">
-          {errMsg}
-        </p>
+        <p className="text-xs text-blood-400 font-mono bg-blood-950/30 border border-blood-900 rounded-lg px-3 py-2">{errMsg}</p>
       )}
 
       <button type="submit" disabled={status === "sending"}
@@ -312,7 +372,6 @@ function ContactForm() {
             : <><Phone size={14} /> Kirim via WhatsApp</>
         }
       </button>
-
       <p className="text-[10px] text-dark-700 font-mono text-center">
         <span className="text-blood-800">*</span> Semua field wajib diisi
       </p>

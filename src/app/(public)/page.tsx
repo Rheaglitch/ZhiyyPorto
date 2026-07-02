@@ -37,7 +37,14 @@ export default async function Home() {
   const aboutParas   = (cfg.about_bio?.paragraphs as string[])                                   ?? [];
   const aboutStats   = (cfg.about_stats?.items   as { value: string; label: string }[])          ?? [];
   const aboutTraits  = (cfg.about_traits?.items  as { icon: string; title: string; desc: string }[]) ?? [];
-  const contactInfo  = (cfg.contact_info as Record<string, string>)                              ?? {};
+  const contactInfo  = (cfg.contact_info as Record<string, unknown>) ?? {};
+  const contactData = {
+    socialLinks:  (contactInfo.socialLinks as import("@/components/sections/ContactSection").SocialLink[]) ?? undefined,
+    location:     (contactInfo.location    as string)  ?? "Indonesia",
+    mapsUrl:      (contactInfo.mapsUrl     as string)  ?? "",
+    showLocation: (contactInfo.showLocation as boolean) !== false,
+    showMaps:     (contactInfo.showMaps    as boolean) === true,
+  };
   const skillsHeading = (cfg.skills_heading as Record<string, string>)                           ?? {};
 
   const projects = ((projectsData ?? []) as ProjectWithRelations[]).map((p) => ({
@@ -71,7 +78,7 @@ export default async function Home() {
       </ParallaxSection>
 
       <ParallaxSection direction="up" intensity={0.08} delay={100}>
-        <ContactSection contactInfo={contactInfo} />
+        <ContactSection contactData={contactData} contactInfo={contactInfo as Record<string, string>} />
       </ParallaxSection>
     </>
   );
