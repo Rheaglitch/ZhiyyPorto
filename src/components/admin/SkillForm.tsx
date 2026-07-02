@@ -27,8 +27,11 @@ export function SkillForm({ skill }: SkillFormProps) {
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "range" || type === "number" ? Number(value) : value,
+    }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -46,13 +49,17 @@ export function SkillForm({ skill }: SkillFormProps) {
       level:       0,
     };
 
-    if (isEdit) {
-      const { error } = await supabase.from("skills").update(payload).eq("id", skill.id);
-      if (error) { setError(error.message); setLoading(false); return; }
-    } else {
-      const { error } = await supabase.from("skills").insert(payload);
-      if (error) { setError(error.message); setLoading(false); return; }
+    const saveSkill = async (withSize: boolean) => {
+      const data = withSize ? payload : { name: payload.name, category: payload.category, icon: payload.icon, order_index: payload.order_index, level: payload.level };
+      if (isEdit) return supabase.from("skills").update(data).eq("id", skill.id);
+      return supabase.from("skills").insert(data);
+    };
+
+    let { error } = await saveSkill(true);
+    if (error?.message?.includes("icon_size")) {
+      ({ error } = await saveSkill(false));
     }
+    if (error) { setError(error.message); setLoading(false); return; }
 
     router.push("/zhaorukou/dashboard/skills");
     router.refresh();
