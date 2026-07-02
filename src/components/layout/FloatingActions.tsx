@@ -29,8 +29,8 @@ export function FloatingActions() {
           : "opacity-0 translate-y-4 pointer-events-none"
       )}
       style={{
-        left:   "20px",
-        bottom: "88px",  // above mobile bottom nav on mobile
+        right:  "20px",
+        bottom: "90px",  // Tidio ~60px + 20px padding + 10px gap
       }}
     >
       <ArrowUp size={16} />
