@@ -8,6 +8,7 @@ interface ProtectionSettings {
   blurOnLeave: boolean;
   disableSelection: boolean;
   blockDevTools: boolean;
+  disableImageInteraction: boolean;
 }
 
 // Active cleanup functions — global so applyProtection can reset them
@@ -138,6 +139,54 @@ function applyProtection(settings: ProtectionSettings) {
     activeCleanups.push(() =>
       document.removeEventListener("keydown", onKey, true)
     );
+  }
+
+  // 5. Disable image interaction (drag, right-click, Edge visual search)
+  if (settings.disableImageInteraction) {
+    let style = document.getElementById("__zhiyy_noimg__") as HTMLStyleElement | null;
+    if (!style) {
+      style = document.createElement("style");
+      style.id = "__zhiyy_noimg__";
+      document.head.appendChild(style);
+    }
+    style.textContent = `
+      img, video {
+        -webkit-user-drag: none !important;
+        user-drag: none !important;
+        -webkit-touch-callout: none !important;
+        pointer-events: none !important;
+      }
+      /* Re-enable pointer-events for links containing images */
+      a img { pointer-events: none !important; }
+      a { pointer-events: auto !important; }
+    `;
+
+    // Block contextmenu on images specifically
+    const onImgCtx = (e: MouseEvent) => {
+      if ((e.target as HTMLElement).tagName === "IMG") {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+    };
+    // Block dragstart on images
+    const onDragStart = (e: DragEvent) => {
+      if ((e.target as HTMLElement).tagName === "IMG") {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener("contextmenu", onImgCtx,   true);
+    document.addEventListener("dragstart",   onDragStart, true);
+
+    activeCleanups.push(() => {
+      const s = document.getElementById("__zhiyy_noimg__");
+      if (s) s.textContent = "";
+      document.removeEventListener("contextmenu", onImgCtx,   true);
+      document.removeEventListener("dragstart",   onDragStart, true);
+    });
+  } else {
+    const s = document.getElementById("__zhiyy_noimg__");
+    if (s) s.textContent = "";
   }
 }
 

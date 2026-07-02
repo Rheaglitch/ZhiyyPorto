@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   ShieldOff,
   Loader2,
+  ImageOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createAdminClient } from "@/lib/supabase/admin-client";
@@ -19,6 +20,7 @@ interface ProtectionSettings {
   blurOnLeave: boolean;
   disableSelection: boolean;
   blockDevTools: boolean;
+  disableImageInteraction: boolean;
 }
 
 const defaultSettings: ProtectionSettings = {
@@ -27,6 +29,7 @@ const defaultSettings: ProtectionSettings = {
   blurOnLeave: false,
   disableSelection: false,
   blockDevTools: false,
+  disableImageInteraction: false,
 };
 
 const features = [
@@ -41,6 +44,12 @@ const features = [
     icon: EyeOff,
     label: "Blur saat kursor keluar",
     desc: "Halaman otomatis diblur ketika kursor meninggalkan jendela browser.",
+  },
+  {
+    key: "disableImageInteraction" as const,
+    icon: ImageOff,
+    label: "Proteksi gambar (anti drag & search)",
+    desc: "Mencegah gambar di-drag, di-klik kanan, dan tombol 'Search image' Edge/Chrome.",
   },
   {
     key: "disableSelection" as const,
@@ -91,6 +100,7 @@ export function ContentProtection() {
       blurOnLeave: next,
       disableSelection: next,
       blockDevTools: next,
+      disableImageInteraction: next,
     });
   }
 
