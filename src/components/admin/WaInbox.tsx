@@ -350,10 +350,8 @@ export function WaInbox({ messages: initialMessages }: WaInboxProps) {
               {replyError && (
                 <p className="text-xs text-blood-400 font-mono mt-2">{replyError}</p>
               )}
-              <p className="text-[10px] text-dark-700 font-mono mt-1.5 flex items-center gap-1">
-                <span>Dikirim via Fonnte ke</span>
-                <span className="text-dark-600">+{activeSender}</span>
-                <span className="ml-1 opacity-50">· Enter untuk kirim</span>
+              <p className="text-[10px] text-dark-700 font-mono mt-1.5">
+                Enter untuk kirim
               </p>
             </div>
           </>
