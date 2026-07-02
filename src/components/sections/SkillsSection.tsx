@@ -2,8 +2,16 @@ import type { Skill } from "@/types/database";
 import { SkillCarousel } from "@/components/ui/SkillCarousel";
 import { GlitchReveal } from "@/components/ui/GlitchReveal";
 
+interface SkillsSectionHeading {
+  label?:    string;  // "— Expertise —"
+  titleMain?:  string;  // "Skills &"
+  titleAccent?: string; // "Tools"
+  subtitle?: string;  // "Dari kode sampai kanvas..."
+}
+
 interface SkillsSectionProps {
-  skills: Skill[];
+  skills:   Skill[];
+  heading?: SkillsSectionHeading;
 }
 
 const defaultSkills: Omit<Skill, "id">[] = [
@@ -23,8 +31,13 @@ const defaultSkills: Omit<Skill, "id">[] = [
   { name: "Premiere",     category: "Creative", level: 70, icon: "https://cdn.simpleicons.org/adobepremierepro/9999FF", order_index: 14 },
 ];
 
-export function SkillsSection({ skills }: SkillsSectionProps) {
+export function SkillsSection({ skills, heading = {} }: SkillsSectionProps) {
   const src = (skills.length > 0 ? skills : defaultSkills) as Skill[];
+
+  const label       = heading.label       ?? "— Expertise —";
+  const titleMain   = heading.titleMain   ?? "Skills &";
+  const titleAccent = heading.titleAccent ?? "Tools";
+  const subtitle    = heading.subtitle    ?? "Dari kode sampai kanvas — tools yang aku kuasai.";
 
   const skillsCarousel  = src.filter(s => ["Frontend", "Backend"].includes(s.category));
   const toolsCarousel   = src.filter(s => ["Tools", "Creative"].includes(s.category));
@@ -35,13 +48,13 @@ export function SkillsSection({ skills }: SkillsSectionProps) {
         {/* Header */}
         <GlitchReveal className="text-center mb-14 px-6">
           <span className="text-blood-600 font-mono text-sm tracking-widest uppercase">
-            — Expertise —
+            {label}
           </span>
           <h2 className="mt-3 text-3xl md:text-4xl font-bold text-dark-100">
-            Skills &amp; <span className="text-gradient-blood">Tools</span>
+            {titleMain} <span className="text-gradient-blood">{titleAccent}</span>
           </h2>
           <p className="mt-3 text-sm max-w-md mx-auto" style={{ color: "var(--text-muted)" }}>
-            Dari kode sampai kanvas — tools yang aku kuasai.
+            {subtitle}
           </p>
         </GlitchReveal>
 

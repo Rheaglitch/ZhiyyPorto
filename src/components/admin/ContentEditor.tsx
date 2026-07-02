@@ -85,6 +85,13 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
     ["Halo! Aku Reavlenia Arezha, seorang creative multidisiplin yang bergerak di dunia digital."]
   );
 
+  // ── Skills heading ──
+  const sh = s.skills_heading as Record<string, string> ?? {};
+  const [skillsLabel,       setSkillsLabel      ] = useState(sh.label       ?? "— Expertise —");
+  const [skillsTitleMain,   setSkillsTitleMain  ] = useState(sh.titleMain   ?? "Skills &");
+  const [skillsTitleAccent, setSkillsTitleAccent] = useState(sh.titleAccent ?? "Tools");
+  const [skillsSubtitle,    setSkillsSubtitle   ] = useState(sh.subtitle    ?? "Dari kode sampai kanvas — tools yang aku kuasai.");
+
   // ── Contact ──
   const ci = s.contact_info as Record<string, string> ?? {};
   const [email,     setEmail    ] = useState(ci.email     ?? "");
@@ -168,6 +175,7 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
       { key: "about_stats",   value: { items: aboutStats } },
       { key: "about_traits",  value: { items: aboutTraits } },
       { key: "contact_info", value: { email, github, instagram, linkedin, location, wa_number: waNumber } },
+      { key: "skills_heading", value: { label: skillsLabel, titleMain: skillsTitleMain, titleAccent: skillsTitleAccent, subtitle: skillsSubtitle } },
     ];
 
     for (const u of updates) {
@@ -456,6 +464,46 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
             className="flex items-center gap-2 text-xs text-dark-500 hover:text-blood-400 font-mono transition-colors">
             <Plus size={12} /> Tambah paragraf
           </button>
+        </div>
+      </Section>
+
+      <Section title="Skills — Heading Section">
+        <p className="text-[10px] text-dark-600 font-mono mb-1">
+          {`// Teks heading pada section "Skills & Tools" di landing page`}
+        </p>
+        <div>
+          <label className={labelCls}>Label kecil (merah, atas judul)</label>
+          <input value={skillsLabel} onChange={e => setSkillsLabel(e.target.value)}
+            className={inputCls} placeholder="— Expertise —" />
+          <p className="text-[10px] text-blood-700 font-mono mt-1">Tampil merah di atas judul</p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Judul — bagian putih</label>
+            <input value={skillsTitleMain} onChange={e => setSkillsTitleMain(e.target.value)}
+              className={inputCls} placeholder="Skills &" />
+            <p className="text-[10px] text-dark-600 font-mono mt-1">Tampil putih (warna biasa)</p>
+          </div>
+          <div>
+            <label className={labelCls}>Judul — bagian merah (aksen)</label>
+            <input value={skillsTitleAccent} onChange={e => setSkillsTitleAccent(e.target.value)}
+              className={`${inputCls} border-blood-900/60 focus:border-blood-600`} placeholder="Tools" />
+            <p className="text-[10px] text-blood-700 font-mono mt-1">Tampil merah/gradient</p>
+          </div>
+        </div>
+        <div>
+          <label className={labelCls}>Subjudul / deskripsi</label>
+          <input value={skillsSubtitle} onChange={e => setSkillsSubtitle(e.target.value)}
+            className={inputCls} placeholder="Dari kode sampai kanvas — tools yang aku kuasai." />
+        </div>
+        {/* Preview */}
+        <div className="mt-3 px-5 py-4 rounded-xl bg-dark-950 border border-dark-800 text-center space-y-1">
+          <p className="text-blood-600 font-mono text-xs tracking-widest uppercase">{skillsLabel || "— Expertise —"}</p>
+          <p className="text-lg font-bold text-dark-100">
+            {skillsTitleMain || "Skills &"}{" "}
+            <span className="text-gradient-blood">{skillsTitleAccent || "Tools"}</span>
+          </p>
+          <p className="text-xs text-dark-500">{skillsSubtitle || "Dari kode sampai kanvas..."}</p>
         </div>
       </Section>
 
