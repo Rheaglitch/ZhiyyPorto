@@ -4,13 +4,14 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, FolderOpen, Wrench, LogOut, ExternalLink,
-  FileText, Eye, Settings, Shield, Music
+  FileText, Eye, Settings, Shield, Music, MessageSquare
 } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin-client";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/zhaorukou/dashboard",                   label: "Dashboard",  icon: LayoutDashboard, exact: true  },
+  { href: "/zhaorukou/dashboard/messages",          label: "Messages",   icon: MessageSquare,   exact: false },
   { href: "/zhaorukou/dashboard/content",           label: "Content",    icon: FileText,        exact: false },
   { href: "/zhaorukou/dashboard/projects",          label: "Projects",   icon: FolderOpen,      exact: false },
   { href: "/zhaorukou/dashboard/skills",            label: "Skills",     icon: Wrench,          exact: false },

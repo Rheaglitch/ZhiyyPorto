@@ -92,6 +92,7 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
   const [instagram, setInstagram] = useState(ci.instagram ?? "");
   const [linkedin,  setLinkedin ] = useState(ci.linkedin  ?? "");
   const [location,  setLocation ] = useState(ci.location  ?? "Indonesia");
+  const [waNumber,  setWaNumber ] = useState(ci.wa_number ?? "");
 
   const [status, setStatus] = useState<SaveStatus>("idle");
 
@@ -166,7 +167,7 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
       { key: "about_bio",     value: { paragraphs: aboutParas } },
       { key: "about_stats",   value: { items: aboutStats } },
       { key: "about_traits",  value: { items: aboutTraits } },
-      { key: "contact_info",  value: { email, github, instagram, linkedin, location } },
+      { key: "contact_info", value: { email, github, instagram, linkedin, location, wa_number: waNumber } },
     ];
 
     for (const u of updates) {
@@ -464,7 +465,8 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
           { label: "GitHub",    value: github,    set: setGithub,    placeholder: "https://github.com/..."     },
           { label: "Instagram", value: instagram, set: setInstagram, placeholder: "https://instagram.com/..." },
           { label: "LinkedIn",  value: linkedin,  set: setLinkedin,  placeholder: "https://linkedin.com/..."  },
-          { label: "Location",  value: location,  set: setLocation,  placeholder: "Indonesia"                  },
+          { label: "Location",        value: location,  set: setLocation,  placeholder: "Indonesia"                  },
+          { label: "No. WA Notifikasi", value: waNumber, set: setWaNumber, placeholder: "628xxxxxxxxxx (tanpa + atau 0)" },
         ].map(({ label, value, set, placeholder }) => (
           <div key={label}>
             <label className={labelCls}>{label}</label>
