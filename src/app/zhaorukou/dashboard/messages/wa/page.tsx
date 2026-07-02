@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { MessagesInbox } from "@/components/admin/MessagesInbox";
+import { WaInbox } from "@/components/admin/WaInbox";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "WA Inbox" };
@@ -9,7 +9,7 @@ export default async function WaInboxPage() {
   const sb = (await createClient()) as any;
 
   const { data: messages } = await sb
-    .from("messages")
+    .from("messages_wa")
     .select("*")
     .order("created_at", { ascending: false });
 
@@ -28,20 +28,11 @@ export default async function WaInboxPage() {
             )}
           </h1>
           <p className="text-xs text-dark-600 mt-1 font-mono">
-            {`// notifikasi WhatsApp — pesan yang sama dikirim ke WA kamu`}
+            {`// pesan WhatsApp masuk via Fonnte webhook`}
           </p>
         </div>
       </div>
-
-      {/* Info banner */}
-      <div className="mb-4 px-4 py-3 rounded-lg border border-dark-700 bg-dark-900/50 text-xs text-dark-400 font-mono">
-        {`// Pesan di sini adalah yang sama dengan Email Inbox. `}
-        {`WA Inbox menampilkan pesan yang juga dikirimkan sebagai notifikasi ke WhatsApp kamu via Fonnte.`}
-        <br />
-        {`// Untuk melihat riwayat WA langsung, buka WhatsApp di HP kamu.`}
-      </div>
-
-      <MessagesInbox messages={messages ?? []} />
+      <WaInbox messages={messages ?? []} />
     </div>
   );
 }
