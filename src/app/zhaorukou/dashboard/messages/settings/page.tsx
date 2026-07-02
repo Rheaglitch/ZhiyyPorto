@@ -12,10 +12,10 @@ export default async function MessageSettingsPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-dark-100">Message Settings</h1>
-        <p className="text-sm text-dark-500 mt-1 font-mono">
-          {`// konfigurasi notifikasi email & WhatsApp`}
+      <div className="mb-6">
+        <h1 className="text-xl font-bold text-dark-100">Notification Settings</h1>
+        <p className="text-xs text-dark-600 mt-1 font-mono">
+          {`// konfigurasi email & WhatsApp notifikasi`}
         </p>
       </div>
       <MessageSettings
