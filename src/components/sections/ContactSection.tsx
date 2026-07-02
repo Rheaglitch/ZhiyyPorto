@@ -49,11 +49,12 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 export interface SocialLink {
-  id:    string;
-  label: string;        // "Email", "GitHub", dll
-  icon:  string;        // key dari ICON_MAP
-  href:  string;        // URL atau mailto:
-  value: string;        // teks yang ditampilkan
+  id:       string;
+  label:    string;
+  icon:     string;
+  href:     string;
+  value:    string;
+  visible?: boolean;  // undefined = visible by default
 }
 
 export interface ContactSectionData {
@@ -87,7 +88,8 @@ export function ContactSection({ contactData, contactInfo = {} }: ContactSection
     { id: "4", label: "Instagram", icon: "instagram", href: contactInfo.instagram || "https://instagram.com/",        value: (contactInfo.instagram || "").replace("https://","") },
   ];
 
-  const links       = contactData?.socialLinks ?? (Object.keys(contactInfo).length ? legacyLinks : DEFAULT_LINKS);
+  const links       = (contactData?.socialLinks ?? (Object.keys(contactInfo).length ? legacyLinks : DEFAULT_LINKS))
+    .filter(l => l.visible !== false); // hide invisible links
   const location    = contactData?.location    ?? contactInfo.location ?? "Indonesia";
   const mapsUrl     = contactData?.mapsUrl     ?? "";
   const showLocation = contactData?.showLocation !== false;

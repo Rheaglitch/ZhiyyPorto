@@ -2,9 +2,31 @@
 
 import { useState, useRef } from "react";
 import { createAdminClient } from "@/lib/supabase/admin-client";
-import { Plus, X, Upload, Loader2, Check } from "lucide-react";
+import { Plus, X, Upload, Loader2, Check, Eye, EyeOff,
+  Mail, Github, Linkedin, Instagram, Twitter, Youtube,
+  Facebook, Twitch, Music2, Dribbble, Figma, Phone, Globe, Link as LinkIcon,
+} from "lucide-react";
 import Image from "next/image";
 import { ImageEditor } from "@/components/admin/ImageEditor";
+import { cn } from "@/lib/utils";
+
+// ── Icon catalogue ─────────────────────────────────────────────────────────────
+const ICON_OPTIONS = [
+  { key: "mail",      label: "Email",     Icon: Mail      },
+  { key: "github",    label: "GitHub",    Icon: Github    },
+  { key: "linkedin",  label: "LinkedIn",  Icon: Linkedin  },
+  { key: "instagram", label: "Instagram", Icon: Instagram },
+  { key: "twitter",   label: "Twitter/X", Icon: Twitter   },
+  { key: "youtube",   label: "YouTube",   Icon: Youtube   },
+  { key: "facebook",  label: "Facebook",  Icon: Facebook  },
+  { key: "twitch",    label: "Twitch",    Icon: Twitch    },
+  { key: "tiktok",    label: "TikTok",    Icon: Music2    },
+  { key: "dribbble",  label: "Dribbble",  Icon: Dribbble  },
+  { key: "figma",     label: "Figma",     Icon: Figma     },
+  { key: "phone",     label: "Phone",     Icon: Phone     },
+  { key: "globe",     label: "Website",   Icon: Globe     },
+  { key: "link",      label: "Link",      Icon: LinkIcon  },
+] as const;
 
 interface ContentEditorProps {
   initialSettings: Record<string, Record<string, unknown>>;
@@ -97,13 +119,13 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
 
   // Migrate legacy flat structure → new socialLinks array
   const defaultLinks = [
-    { id: "1", label: "Email",     icon: "mail",      href: `mailto:${(ci.email as string) ?? ""}`,         value: (ci.email     as string) ?? "" },
-    { id: "2", label: "GitHub",    icon: "github",    href: (ci.github    as string) ?? "https://github.com/",    value: ((ci.github    as string) ?? "").replace("https://","") },
-    { id: "3", label: "LinkedIn",  icon: "linkedin",  href: (ci.linkedin  as string) ?? "https://linkedin.com/",  value: ((ci.linkedin  as string) ?? "").replace("https://","") },
-    { id: "4", label: "Instagram", icon: "instagram", href: (ci.instagram as string) ?? "https://instagram.com/", value: ((ci.instagram as string) ?? "").replace("https://","") },
+    { id: "1", label: "Email",     icon: "mail",      href: `mailto:${(ci.email as string) ?? ""}`,         value: (ci.email     as string) ?? "",                                        visible: true },
+    { id: "2", label: "GitHub",    icon: "github",    href: (ci.github    as string) ?? "https://github.com/",    value: ((ci.github    as string) ?? "").replace("https://",""),         visible: true },
+    { id: "3", label: "LinkedIn",  icon: "linkedin",  href: (ci.linkedin  as string) ?? "https://linkedin.com/",  value: ((ci.linkedin  as string) ?? "").replace("https://",""),         visible: true },
+    { id: "4", label: "Instagram", icon: "instagram", href: (ci.instagram as string) ?? "https://instagram.com/", value: ((ci.instagram as string) ?? "").replace("https://",""),         visible: true },
   ];
-  const [socialLinks, setSocialLinks] = useState<{ id: string; label: string; icon: string; href: string; value: string }[]>(
-    (ci.socialLinks as { id: string; label: string; icon: string; href: string; value: string }[]) ?? defaultLinks
+  const [socialLinks, setSocialLinks] = useState<{ id: string; label: string; icon: string; href: string; value: string; visible: boolean }[]>(
+    (ci.socialLinks as { id: string; label: string; icon: string; href: string; value: string; visible: boolean }[]) ?? defaultLinks
   );
   const [location,     setLocation    ] = useState<string>((ci.location as string)     ?? "Indonesia");
   const [showLocation, setShowLocation] = useState<boolean>((ci.showLocation as boolean) !== false);
@@ -518,64 +540,148 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
       </Section>
 
       <Section title="Contact — Social Links">
-        <p className="text-[10px] text-dark-600 font-mono mb-1">
-          {`// Jika lebih dari 4 link → tampil sebagai icon-only dengan tooltip hover`}
-        </p>
-        <p className="text-[10px] text-dark-600 font-mono mb-3">
-          {`// Icon tersedia: mail, github, linkedin, instagram, twitter, youtube, facebook, twitch, tiktok, dribbble, figma, phone, globe, link`}
-        </p>
-        <div className="space-y-3">
-          {socialLinks.map((lnk, i) => (
-            <div key={lnk.id} className="card-dark rounded-xl p-4 border border-dark-800 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono text-dark-600">Link #{i + 1}</span>
-                <button type="button"
-                  onClick={() => setSocialLinks(prev => prev.filter((_, idx) => idx !== i))}
-                  className="text-dark-600 hover:text-blood-400 p-1 rounded transition-colors">
-                  <X size={12} />
-                </button>
+        {/* ── Live preview ── */}
+        <div className="mb-4">
+          <p className="text-[10px] font-mono text-dark-600 mb-2">Preview tampilan di landing page:</p>
+          <div className="px-4 py-3 rounded-xl bg-dark-950 border border-dark-800 space-y-2">
+            {/* >4 = icon only */}
+            {socialLinks.filter(l => l.visible !== false).length > 4 ? (
+              <div className="flex flex-wrap gap-2">
+                {socialLinks.filter(l => l.visible !== false).map(lnk => {
+                  const opt = ICON_OPTIONS.find(o => o.key === lnk.icon);
+                  const Icon = opt?.Icon ?? LinkIcon;
+                  return (
+                    <div key={lnk.id} title={lnk.label}
+                      className="w-8 h-8 rounded-lg bg-blood-950 border border-blood-900/60 flex items-center justify-center">
+                      <Icon size={14} className="text-blood-400" />
+                    </div>
+                  );
+                })}
+                <p className="w-full text-[9px] font-mono text-dark-700 mt-1">
+                  {socialLinks.filter(l => l.visible !== false).length} link — icon only mode
+                </p>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className={labelCls}>Label (nama sosmed)</label>
-                  <input value={lnk.label}
-                    onChange={e => setSocialLinks(prev => prev.map((v, idx) => idx === i ? { ...v, label: e.target.value } : v))}
-                    className={inputCls} placeholder="Instagram" />
-                </div>
-                <div>
-                  <label className={labelCls}>Icon</label>
-                  <select value={lnk.icon}
-                    onChange={e => setSocialLinks(prev => prev.map((v, idx) => idx === i ? { ...v, icon: e.target.value } : v))}
-                    className={`${inputCls} cursor-pointer`}>
-                    {["mail","github","linkedin","instagram","twitter","youtube","facebook","twitch","tiktok","dribbble","figma","phone","globe","link"].map(ic => (
-                      <option key={ic} value={ic}>{ic}</option>
-                    ))}
-                  </select>
-                </div>
+            ) : (
+              <div className="space-y-1.5">
+                {socialLinks.filter(l => l.visible !== false).map(lnk => {
+                  const opt = ICON_OPTIONS.find(o => o.key === lnk.icon);
+                  const Icon = opt?.Icon ?? LinkIcon;
+                  return (
+                    <div key={lnk.id} className="flex items-center gap-3 p-2 rounded-lg bg-dark-900/50 border border-dark-800/50">
+                      <div className="w-7 h-7 rounded-md bg-blood-950 border border-blood-900/50 flex items-center justify-center shrink-0">
+                        <Icon size={13} className="text-blood-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[9px] font-mono text-dark-600">{lnk.label || "Label"}</p>
+                        <p className="text-xs text-dark-400 truncate">{lnk.value || lnk.href || "—"}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+                {socialLinks.filter(l => l.visible !== false).length === 0 && (
+                  <p className="text-[10px] text-dark-700 font-mono">Tidak ada link yang ditampilkan</p>
+                )}
               </div>
-              <div>
-                <label className={labelCls}>URL / Link</label>
-                <input value={lnk.href}
-                  onChange={e => setSocialLinks(prev => prev.map((v, idx) => idx === i ? { ...v, href: e.target.value, value: e.target.value.replace(/^mailto:/,"").replace("https://","") } : v))}
-                  className={inputCls} placeholder="https://instagram.com/username atau mailto:email@gmail.com" />
-              </div>
-              <div>
-                <label className={labelCls}>Teks yang ditampilkan</label>
-                <input value={lnk.value}
-                  onChange={e => setSocialLinks(prev => prev.map((v, idx) => idx === i ? { ...v, value: e.target.value } : v))}
-                  className={inputCls} placeholder="instagram.com/username" />
-              </div>
-            </div>
-          ))}
-          <button type="button"
-            onClick={() => setSocialLinks(prev => [...prev, { id: String(Date.now()), label: "", icon: "link", href: "", value: "" }])}
-            className="flex items-center gap-2 text-xs text-dark-500 hover:text-blood-400 font-mono transition-colors">
-            <Plus size={12} /> Tambah link
-          </button>
+            )}
+          </div>
         </div>
-        {socialLinks.length > 4 && (
+
+        {/* ── Link editor list ── */}
+        <div className="space-y-3">
+          {socialLinks.map((lnk, i) => {
+            const opt = ICON_OPTIONS.find(o => o.key === lnk.icon);
+            const PreviewIcon = opt?.Icon ?? LinkIcon;
+            const isVisible = lnk.visible !== false;
+            return (
+              <div key={lnk.id} className={cn(
+                "rounded-xl border transition-colors",
+                isVisible ? "border-dark-800 bg-dark-900/20" : "border-dark-900 bg-dark-950/50 opacity-60"
+              )}>
+                {/* Row header */}
+                <div className="flex items-center gap-3 px-4 py-2.5 border-b border-dark-800/50">
+                  <div className="w-7 h-7 rounded-lg bg-blood-950 border border-blood-900/40 flex items-center justify-center shrink-0">
+                    <PreviewIcon size={13} className="text-blood-400" />
+                  </div>
+                  <span className="text-xs font-medium text-dark-300 flex-1">{lnk.label || `Link #${i + 1}`}</span>
+                  <div className="flex items-center gap-1">
+                    {/* Visibility toggle */}
+                    <button type="button" title={isVisible ? "Sembunyikan" : "Tampilkan"}
+                      onClick={() => setSocialLinks(prev => prev.map((v, idx) => idx === i ? { ...v, visible: !isVisible } : v))}
+                      className={cn("p-1.5 rounded-lg transition-colors",
+                        isVisible ? "text-dark-400 hover:text-blood-400 hover:bg-blood-950/40" : "text-dark-700 hover:text-dark-400 hover:bg-dark-800/50")}>
+                      {isVisible ? <Eye size={13} /> : <EyeOff size={13} />}
+                    </button>
+                    {/* Delete */}
+                    <button type="button"
+                      onClick={() => setSocialLinks(prev => prev.filter((_, idx) => idx !== i))}
+                      className="p-1.5 rounded-lg text-dark-700 hover:text-blood-400 hover:bg-blood-950/40 transition-colors">
+                      <X size={13} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Fields */}
+                <div className="px-4 py-3 space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className={labelCls}>Nama sosmed</label>
+                      <input value={lnk.label}
+                        onChange={e => setSocialLinks(prev => prev.map((v, idx) => idx === i ? { ...v, label: e.target.value } : v))}
+                        className={inputCls} placeholder="TikTok" />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Icon</label>
+                      {/* Visual icon picker */}
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {ICON_OPTIONS.map(({ key, label, Icon }) => (
+                          <button key={key} type="button" title={label}
+                            onClick={() => setSocialLinks(prev => prev.map((v, idx) => idx === i ? { ...v, icon: key } : v))}
+                            className={cn("w-8 h-8 rounded-lg border flex items-center justify-center transition-all",
+                              lnk.icon === key
+                                ? "bg-blood-700 border-blood-600 text-white"
+                                : "bg-dark-900 border-dark-800 text-dark-500 hover:border-dark-600 hover:text-dark-300")}>
+                            <Icon size={13} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label className={labelCls}>URL / Link</label>
+                    <input value={lnk.href}
+                      onChange={e => {
+                        const href = e.target.value;
+                        const display = href.replace(/^mailto:/, "").replace(/^https?:\/\//, "");
+                        setSocialLinks(prev => prev.map((v, idx) => idx === i ? { ...v, href, value: display } : v));
+                      }}
+                      className={inputCls} placeholder="https://tiktok.com/@username atau mailto:email@gmail.com" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Teks yang ditampilkan</label>
+                    <input value={lnk.value}
+                      onChange={e => setSocialLinks(prev => prev.map((v, idx) => idx === i ? { ...v, value: e.target.value } : v))}
+                      className={inputCls} placeholder="tiktok.com/@username" />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Add button — max 10 */}
+        {socialLinks.length < 10 ? (
+          <button type="button"
+            onClick={() => setSocialLinks(prev => [...prev, { id: String(Date.now()), label: "", icon: "link", href: "", value: "", visible: true }])}
+            className="flex items-center gap-2 text-xs text-dark-500 hover:text-blood-400 font-mono transition-colors mt-3">
+            <Plus size={12} /> Tambah sosmed ({socialLinks.length}/10)
+          </button>
+        ) : (
+          <p className="text-[10px] text-dark-600 font-mono mt-3">Maksimal 10 sosmed tercapai</p>
+        )}
+
+        {socialLinks.filter(l => l.visible !== false).length > 4 && (
           <p className="text-[10px] text-blood-700 font-mono mt-2">
-            ⚡ {socialLinks.length} link — tampil sebagai icon-only dengan tooltip hover
+            ⚡ {socialLinks.filter(l => l.visible !== false).length} link aktif → tampil icon-only dengan tooltip hover
           </p>
         )}
       </Section>
