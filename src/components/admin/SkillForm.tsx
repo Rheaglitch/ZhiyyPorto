@@ -17,7 +17,7 @@ export function SkillForm({ skill }: SkillFormProps) {
     name:        skill?.name        ?? "",
     category:    skill?.category    ?? "Frontend",
     icon:        skill?.icon        ?? "",
-    icon_size:   skill?.icon_size   ?? 70,
+    icon_size:   Number(skill?.icon_size ?? 70),
     order_index: skill?.order_index ?? 0,
   });
 
@@ -92,7 +92,7 @@ export function SkillForm({ skill }: SkillFormProps) {
         </select>
       </div>
 
-      {/* Icon URL */}
+      {/* Icon URL + size — side by side */}
       <div>
         <label className={labelClass}>Icon URL</label>
         <input
@@ -106,42 +106,49 @@ export function SkillForm({ skill }: SkillFormProps) {
         <p className="text-[10px] text-dark-600 font-mono mt-1.5">
           {`// simpleicons.org — contoh: https://cdn.simpleicons.org/figma/F24E1E`}
         </p>
+      </div>
 
-        {/* Icon preview */}
-        {form.icon && (
-          <div className="mt-3 flex items-center gap-3 p-3 rounded-lg bg-dark-900 border border-dark-800">
-            <div className="w-10 h-10 flex items-center justify-center shrink-0 bg-dark-950 rounded-lg border border-dark-800">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+      {/* Icon size slider + live preview */}
+      <div>
+        <label className={labelClass}>
+          Ukuran Icon — <span className="text-blood-500 font-semibold">{form.icon_size}%</span>
+        </label>
+
+        {/* Preview box — transparent bg, just show the icon */}
+        <div className="flex items-center gap-5 mb-3 mt-1">
+          <div className="relative w-16 h-16 flex items-center justify-center shrink-0 rounded-xl border border-dark-800 overflow-hidden">
+            {form.icon ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={form.icon}
                 alt="preview"
-                style={{ width: `${form.icon_size}%`, height: `${form.icon_size}%`, objectFit: "contain" }}
+                style={{
+                  width:     `${form.icon_size}%`,
+                  height:    `${form.icon_size}%`,
+                  objectFit: "contain",
+                }}
               />
-            </div>
-            <span className="text-xs text-dark-400 font-mono">{form.name || "preview"}</span>
+            ) : (
+              <span className="text-dark-700 text-[10px] font-mono text-center">no icon</span>
+            )}
           </div>
-        )}
-      </div>
-
-      {/* Icon size */}
-      <div>
-        <label className={labelClass}>
-          Ukuran Icon — <span className="text-blood-500">{form.icon_size}%</span>
-        </label>
-        <input
-          name="icon_size"
-          type="range"
-          min={30}
-          max={100}
-          step={5}
-          value={form.icon_size}
-          onChange={handleChange}
-          className="w-full accent-blood-600 cursor-pointer"
-        />
-        <div className="flex justify-between text-[9px] font-mono text-dark-700 mt-0.5">
-          <span>Kecil (30%)</span>
-          <span>Sedang (65%)</span>
-          <span>Penuh (100%)</span>
+          <div className="flex-1">
+            <input
+              name="icon_size"
+              type="range"
+              min={20}
+              max={100}
+              step={5}
+              value={form.icon_size}
+              onChange={handleChange}
+              className="w-full accent-blood-600 cursor-pointer"
+            />
+            <div className="flex justify-between text-[9px] font-mono text-dark-700 mt-1">
+              <span>20% kecil</span>
+              <span>60% sedang</span>
+              <span>100% penuh</span>
+            </div>
+          </div>
         </div>
       </div>
 

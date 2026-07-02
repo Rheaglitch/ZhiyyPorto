@@ -62,7 +62,7 @@ export default async function AdminSkillsPage() {
                         {/* Icon */}
                         {skill.icon ? (
                           <div
-                            className="w-14 h-14 rounded-xl bg-dark-900 border border-dark-800 flex items-center justify-center group-hover:border-blood-900/40 transition-colors overflow-hidden"
+                            className="w-14 h-14 rounded-xl border border-dark-800/50 flex items-center justify-center group-hover:border-blood-900/40 transition-colors overflow-hidden"
                             style={{ padding: `${pad}px` }}
                           >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -73,7 +73,7 @@ export default async function AdminSkillsPage() {
                             />
                           </div>
                         ) : (
-                          <div className="w-14 h-14 rounded-xl bg-dark-900 border border-dark-800 flex items-center justify-center">
+                          <div className="w-14 h-14 rounded-xl border border-dark-800 flex items-center justify-center">
                             <span className="text-blood-600 text-sm font-mono font-bold">
                               {skill.name.slice(0, 2).toUpperCase()}
                             </span>
