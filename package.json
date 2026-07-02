@@ -19,6 +19,7 @@
     "react-dom": "19.2.7",
     "react-easy-crop": "^6.0.2",
     "react-image-crop": "^11.1.2",
+    "resend": "^6.16.0",
     "tailwind-merge": "3.6.0"
   },
   "devDependencies": {

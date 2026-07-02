@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { MessagesInbox } from "@/components/admin/MessagesInbox";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Messages" };
@@ -31,6 +32,10 @@ export default async function MessagesPage() {
             {`// pesan dari form contact di website`}
           </p>
         </div>
+        <Link href="/zhaorukou/dashboard/messages/settings"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dark-700 hover:border-blood-700 text-dark-400 hover:text-blood-400 text-xs font-mono transition-colors">
+          ⚙ Settings
+        </Link>
       </div>
       <MessagesInbox messages={messages ?? []} />
     </div>
