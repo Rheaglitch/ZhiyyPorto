@@ -100,6 +100,7 @@ export interface Database {
           category: string;
           level: number;
           icon: string | null;
+          icon_size: number | null;
           order_index: number;
         };
         Insert: {
@@ -108,6 +109,7 @@ export interface Database {
           category: string;
           level?: number;
           icon?: string | null;
+          icon_size?: number | null;
           order_index?: number;
         };
         Update: {
@@ -116,6 +118,7 @@ export interface Database {
           category?: string;
           level?: number;
           icon?: string | null;
+          icon_size?: number | null;
           order_index?: number;
         };
       };

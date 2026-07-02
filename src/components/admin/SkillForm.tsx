@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin-client";
-import Image from "next/image";
 import type { Skill } from "@/types/database";
 
 interface SkillFormProps {
@@ -18,6 +17,7 @@ export function SkillForm({ skill }: SkillFormProps) {
     name:        skill?.name        ?? "",
     category:    skill?.category    ?? "Frontend",
     icon:        skill?.icon        ?? "",
+    icon_size:   skill?.icon_size   ?? 70,
     order_index: skill?.order_index ?? 0,
   });
 
@@ -41,8 +41,9 @@ export function SkillForm({ skill }: SkillFormProps) {
       name:        form.name,
       category:    form.category,
       icon:        form.icon || null,
+      icon_size:   Number(form.icon_size),
       order_index: Number(form.order_index),
-      level:       0, // field still exists in DB, set to 0
+      level:       0,
     };
 
     if (isEdit) {
@@ -103,27 +104,45 @@ export function SkillForm({ skill }: SkillFormProps) {
           className={inputClass}
         />
         <p className="text-[10px] text-dark-600 font-mono mt-1.5">
-          {`// Gunakan simpleicons.org — contoh: https://cdn.simpleicons.org/figma/F24E1E`}
+          {`// simpleicons.org — contoh: https://cdn.simpleicons.org/figma/F24E1E`}
         </p>
 
         {/* Icon preview */}
         {form.icon && (
           <div className="mt-3 flex items-center gap-3 p-3 rounded-lg bg-dark-900 border border-dark-800">
-            <div className="w-8 h-8 flex items-center justify-center shrink-0">
-              <Image
+            <div className="w-10 h-10 flex items-center justify-center shrink-0 bg-dark-950 rounded-lg border border-dark-800">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src={form.icon}
                 alt="preview"
-                width={32}
-                height={32}
-                className="w-7 h-7 object-contain"
-                unoptimized
+                style={{ width: `${form.icon_size}%`, height: `${form.icon_size}%`, objectFit: "contain" }}
               />
             </div>
-            <span className="text-xs text-dark-400 font-mono">
-              {form.name || "preview"}
-            </span>
+            <span className="text-xs text-dark-400 font-mono">{form.name || "preview"}</span>
           </div>
         )}
+      </div>
+
+      {/* Icon size */}
+      <div>
+        <label className={labelClass}>
+          Ukuran Icon — <span className="text-blood-500">{form.icon_size}%</span>
+        </label>
+        <input
+          name="icon_size"
+          type="range"
+          min={30}
+          max={100}
+          step={5}
+          value={form.icon_size}
+          onChange={handleChange}
+          className="w-full accent-blood-600 cursor-pointer"
+        />
+        <div className="flex justify-between text-[9px] font-mono text-dark-700 mt-0.5">
+          <span>Kecil (30%)</span>
+          <span>Sedang (65%)</span>
+          <span>Penuh (100%)</span>
+        </div>
       </div>
 
       {/* Order */}

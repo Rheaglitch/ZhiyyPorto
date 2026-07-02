@@ -19,6 +19,9 @@ function SkillItem({ skill }: { skill: Skill }) {
     .toUpperCase()
     .slice(0, 3);
 
+  const iconSize = skill.icon_size ?? 70;
+  const pad = Math.round((100 - iconSize) / 2 * 0.16); // px padding inside container
+
   return (
     <div
       className="relative flex flex-col items-center justify-center gap-2 shrink-0 cursor-default group"
@@ -29,18 +32,19 @@ function SkillItem({ skill }: { skill: Skill }) {
       {/* Icon or initials */}
       <div
         className={cn(
-          "w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-300",
+          "w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-300 overflow-hidden",
           hovered
             ? "border-blood-700 bg-blood-950/60 scale-110 shadow-lg shadow-blood-900/40"
             : "border-[var(--border)] bg-[var(--bg-card)]"
         )}
+        style={{ padding: `${pad}px` }}
       >
         {skill.icon ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={skill.icon}
             alt={skill.name}
-            className="w-7 h-7 object-contain"
+            style={{ width: "100%", height: "100%", objectFit: "contain" }}
             onError={(e) => {
               const t = e.currentTarget;
               t.style.display = "none";

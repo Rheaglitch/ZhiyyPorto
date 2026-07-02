@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { DeleteSkillButton } from "@/components/admin/DeleteSkillButton";
 import type { Skill } from "@/types/database";
-import Image from "next/image";
 
 export default async function AdminSkillsPage() {
   const supabase = await createClient();
@@ -53,45 +52,50 @@ export default async function AdminSkillsPage() {
 
                 {/* Skill cards */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                  {catSkills.map((skill) => (
-                    <div key={skill.id}
-                      className="group card-dark rounded-xl border border-dark-800 p-4 hover:border-blood-900/60 hover:bg-dark-900/50 transition-all duration-200 flex flex-col items-center gap-3 text-center relative">
+                  {catSkills.map((skill) => {
+                    const iconSize = skill.icon_size ?? 70;
+                    const pad = Math.round((100 - iconSize) / 2 * 0.4);
+                    return (
+                      <div key={skill.id}
+                        className="group card-dark rounded-xl border border-dark-800 p-3 hover:border-blood-900/60 hover:bg-dark-900/50 transition-all duration-200 flex flex-col items-center gap-2.5 text-center relative">
 
-                      {/* Icon */}
-                      {skill.icon ? (
-                        <div className="w-12 h-12 rounded-xl bg-dark-900 border border-dark-800 flex items-center justify-center p-2 group-hover:border-blood-900/40 transition-colors">
-                          <Image
-                            src={skill.icon}
-                            alt={skill.name}
-                            width={32}
-                            height={32}
-                            className="w-8 h-8 object-contain"
-                            unoptimized
-                          />
+                        {/* Icon */}
+                        {skill.icon ? (
+                          <div
+                            className="w-14 h-14 rounded-xl bg-dark-900 border border-dark-800 flex items-center justify-center group-hover:border-blood-900/40 transition-colors overflow-hidden"
+                            style={{ padding: `${pad}px` }}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={skill.icon}
+                              alt={skill.name}
+                              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-14 h-14 rounded-xl bg-dark-900 border border-dark-800 flex items-center justify-center">
+                            <span className="text-blood-600 text-sm font-mono font-bold">
+                              {skill.name.slice(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Name */}
+                        <p className="text-xs font-medium text-dark-300 leading-tight">{skill.name}</p>
+
+                        {/* Actions — visible on hover */}
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Link
+                            href={`/zhaorukou/dashboard/skills/${skill.id}`}
+                            className="px-2 py-1 rounded-lg text-[10px] font-mono text-dark-400 hover:text-blood-400 hover:bg-blood-950/50 border border-transparent hover:border-blood-900/40 transition-colors"
+                          >
+                            Edit
+                          </Link>
+                          <DeleteSkillButton id={skill.id} name={skill.name} />
                         </div>
-                      ) : (
-                        <div className="w-12 h-12 rounded-xl bg-dark-900 border border-dark-800 flex items-center justify-center">
-                          <span className="text-blood-600 text-sm font-mono font-bold">
-                            {skill.name.slice(0, 2).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Name */}
-                      <p className="text-sm font-medium text-dark-200 leading-tight">{skill.name}</p>
-
-                      {/* Actions — visible on hover */}
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Link
-                          href={`/zhaorukou/dashboard/skills/${skill.id}`}
-                          className="px-2.5 py-1 rounded-lg text-[11px] font-mono text-dark-400 hover:text-blood-400 hover:bg-blood-950/50 border border-transparent hover:border-blood-900/40 transition-colors"
-                        >
-                          Edit
-                        </Link>
-                        <DeleteSkillButton id={skill.id} name={skill.name} />
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );
