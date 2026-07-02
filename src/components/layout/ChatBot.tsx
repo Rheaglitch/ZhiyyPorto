@@ -4,8 +4,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const BALL_SIZE    = 48;   // px diameter
-const SAFE_PADDING = 12;   // min distance from edges
+const BALL_SIZE    = 36;   // px — kecil, tidak mengganggu
+const SAFE_PADDING = 16;   // min distance from edges
 const STORAGE_KEY  = "zhiyy_chatbot_pos";
 
 function clampPos(x: number, y: number): { x: number; y: number } {
@@ -20,10 +20,10 @@ function clampPos(x: number, y: number): { x: number; y: number } {
 }
 
 function getDefaultPos(): { x: number; y: number } {
-  // Default: bottom-right, above scroll-to-top (which is at bottom:88px right:20px)
-  // So chatbot at bottom: 88 + 48 + 12 = 148px from bottom
-  const x = window.innerWidth  - BALL_SIZE - SAFE_PADDING - 4;
-  const y = window.innerHeight - BALL_SIZE - 148;
+  // scroll-to-top: bottom 88px, right 20px, size 40px
+  // chatbot tepat di atas: 88 + 40 + 12 = 140px from bottom
+  const x = window.innerWidth  - BALL_SIZE - 20;
+  const y = window.innerHeight - BALL_SIZE - 140;
   return clampPos(x, y);
 }
 
@@ -210,8 +210,8 @@ export function ChatBot() {
       }}
     >
       {tidioOpen
-        ? <X          size={20} className="text-white pointer-events-none" />
-        : <MessageCircle size={20} className="text-white pointer-events-none" />
+        ? <X          size={15} className="text-white pointer-events-none" />
+        : <MessageCircle size={15} className="text-white pointer-events-none" />
       }
 
       <style>{`

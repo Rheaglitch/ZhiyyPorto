@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import {
   Home, User, Wrench, FolderOpen, Mail,
-  Sun, Moon, Music2, Pause, Play, Volume2, VolumeX
+  Sun, Moon, Music2, Pause, Play,
 } from "lucide-react";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { NavLogo } from "@/components/layout/NavLogo";
@@ -32,9 +32,7 @@ const mobileNavItems = [
 function MusicControl({ compact = false }: { compact?: boolean }) {
   const audioRef  = useRef<HTMLAudioElement | null>(null);
   const [url,     setUrl    ] = useState<string | null>(null);
-  const [playing, setPlaying] = useState(false); // default: diam
-  const [muted,   setMuted  ] = useState(false);
-  const [prog,    setProg   ] = useState(0);
+  const [playing, setPlaying] = useState(false);
   const [ready,   setReady  ] = useState(false);
 
   useEffect(() => {
@@ -46,72 +44,39 @@ function MusicControl({ compact = false }: { compact?: boolean }) {
   useEffect(() => {
     if (!url) return;
     const a = new Audio(url);
-    a.loop = true;
-    a.preload = "metadata"; // load metadata only, don't auto-play
+    a.loop    = true;
+    a.preload = "metadata";
     audioRef.current = a;
     a.addEventListener("canplay", () => setReady(true));
-    a.addEventListener("timeupdate", () => {
-      if (a.duration) setProg(a.currentTime / a.duration * 100);
-    });
-    a.addEventListener("ended", () => setPlaying(false));
+    a.addEventListener("ended",   () => setPlaying(false));
     return () => { a.pause(); a.src = ""; setReady(false); };
   }, [url]);
 
   function togglePlay() {
     const a = audioRef.current;
-    if (!a) return;
-    if (playing) {
-      a.pause();
-      setPlaying(false);
-    } else {
-      a.play().then(() => setPlaying(true)).catch(() => {});
-    }
-  }
-
-  function toggleMute() {
-    const a = audioRef.current;
-    if (!a) return;
-    a.muted = !muted;
-    setMuted(!muted);
+    if (!a || !ready) return;
+    if (playing) { a.pause(); setPlaying(false); }
+    else { a.play().then(() => setPlaying(true)).catch(() => {}); }
   }
 
   if (!url) return null;
 
-  if (compact) {
-    // Mobile: just play/pause icon button
-    return (
-      <button onClick={togglePlay}
-        className="w-8 h-8 rounded-full flex items-center justify-center border transition-all"
-        style={{ borderColor: "var(--border)", background: "var(--bg-card)", color: playing ? "var(--blood-400, #f87171)" : "var(--text-muted)" }}
-        aria-label={playing ? "Pause music" : "Play music"}>
-        {playing ? <Pause size={13} /> : <Music2 size={13} />}
-      </button>
-    );
-  }
-
   return (
-    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-card)]">
-      {/* Play/Pause */}
-      <button onClick={togglePlay} disabled={!ready}
-        className={cn("transition-colors", ready ? "text-blood-400 hover:text-blood-300" : "text-dark-700 cursor-not-allowed")}
-        aria-label={playing ? "Pause" : "Play"}>
-        {playing ? <Pause size={11} /> : <Play size={11} />}
-      </button>
-
-      {/* Progress bar */}
-      <div className="w-14 h-0.5 bg-[var(--border)] rounded-full overflow-hidden">
-        <div className="h-full bg-blood-600 transition-all duration-300" style={{ width: `${prog}%` }} />
-      </div>
-
-      {/* Music icon — pulsing when playing */}
-      <Music2 size={9} className={cn("transition-colors", playing ? "text-blood-600 animate-pulse" : "text-dark-600")} />
-
-      {/* Mute */}
-      <button onClick={toggleMute}
-        className="text-dark-600 hover:text-dark-400 transition-colors" aria-label="Mute">
-        {muted ? <VolumeX size={10} /> : <Volume2 size={10} />}
-      </button>
-    </div>
+    <button
+      onClick={togglePlay}
+      title={playing ? "Pause music" : "Play music"}
+      className={cn(
+        "w-8 h-8 rounded-full flex items-center justify-center border transition-all",
+        playing
+          ? "border-blood-700/60 bg-blood-950/60 text-blood-400"
+          : "border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-muted)]",
+        !ready && "opacity-50 cursor-not-allowed"
+      )}
+      aria-label={playing ? "Pause" : "Play music"}
+      disabled={!ready}
+    >
+      {playing ? <Pause size={13} /> : <Play size={13} />}
+    </button>
   );
 }
 
