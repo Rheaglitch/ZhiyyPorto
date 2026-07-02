@@ -114,6 +114,9 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
   const [skillsTitleAccent, setSkillsTitleAccent] = useState(sh.titleAccent ?? "Tools");
   const [skillsSubtitle,    setSkillsSubtitle   ] = useState(sh.subtitle    ?? "Dari kode sampai kanvas — tools yang aku kuasai.");
 
+  // ── Contact — semua state ──
+  const ci = s.contact_info as Record<string, unknown> ?? {};
+
   // ── Contact heading ──
   const [contactHeadingLabel,    setContactHeadingLabel   ] = useState<string>((ci.headingLabel    as string) ?? "— Get In Touch —");
   const [contactHeadingMain,     setContactHeadingMain    ] = useState<string>((ci.headingMain     as string) ?? "Let\u2019s");
@@ -121,23 +124,21 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
   const [contactHeadingSubtitle, setContactHeadingSubtitle] = useState<string>((ci.headingSubtitle as string) ?? "Ada project menarik, mau kolaborasi, atau sekadar ngobrol? Aku selalu terbuka — reach out kapan saja.");
 
   // ── Contact — social links (dynamic) ──
-  const ci = s.contact_info as Record<string, unknown> ?? {};
-
   // Migrate legacy flat structure → new socialLinks array
   const defaultLinks = [
-    { id: "1", label: "Email",     icon: "mail",      href: `mailto:${(ci.email as string) ?? ""}`,         value: (ci.email     as string) ?? "",                                        visible: true },
-    { id: "2", label: "GitHub",    icon: "github",    href: (ci.github    as string) ?? "https://github.com/",    value: ((ci.github    as string) ?? "").replace("https://",""),         visible: true },
-    { id: "3", label: "LinkedIn",  icon: "linkedin",  href: (ci.linkedin  as string) ?? "https://linkedin.com/",  value: ((ci.linkedin  as string) ?? "").replace("https://",""),         visible: true },
-    { id: "4", label: "Instagram", icon: "instagram", href: (ci.instagram as string) ?? "https://instagram.com/", value: ((ci.instagram as string) ?? "").replace("https://",""),         visible: true },
+    { id: "1", label: "Email",     icon: "mail",      href: `mailto:${(ci.email as string) ?? ""}`,              value: (ci.email     as string) ?? "",                                  visible: true },
+    { id: "2", label: "GitHub",    icon: "github",    href: (ci.github    as string) ?? "https://github.com/",   value: ((ci.github    as string) ?? "").replace("https://",""),          visible: true },
+    { id: "3", label: "LinkedIn",  icon: "linkedin",  href: (ci.linkedin  as string) ?? "https://linkedin.com/", value: ((ci.linkedin  as string) ?? "").replace("https://",""),          visible: true },
+    { id: "4", label: "Instagram", icon: "instagram", href: (ci.instagram as string) ?? "https://instagram.com/",value: ((ci.instagram as string) ?? "").replace("https://",""),          visible: true },
   ];
   const [socialLinks, setSocialLinks] = useState<{ id: string; label: string; icon: string; href: string; value: string; visible: boolean }[]>(
     (ci.socialLinks as { id: string; label: string; icon: string; href: string; value: string; visible: boolean }[]) ?? defaultLinks
   );
-  const [location,     setLocation    ] = useState<string>((ci.location as string)     ?? "Indonesia");
+  const [location,     setLocation    ] = useState<string>((ci.location     as string)  ?? "Indonesia");
   const [showLocation, setShowLocation] = useState<boolean>((ci.showLocation as boolean) !== false);
-  const [mapsUrl,      setMapsUrl     ] = useState<string>((ci.mapsUrl   as string)    ?? "");
-  const [showMaps,     setShowMaps    ] = useState<boolean>((ci.showMaps  as boolean)  === true);
-  const [waNumber,     setWaNumber    ] = useState<string>((ci.wa_number as string)    ?? "");
+  const [mapsUrl,      setMapsUrl     ] = useState<string>((ci.mapsUrl      as string)  ?? "");
+  const [showMaps,     setShowMaps    ] = useState<boolean>((ci.showMaps     as boolean) === true);
+  const [waNumber,     setWaNumber    ] = useState<string>((ci.wa_number     as string)  ?? "");
 
   const [status, setStatus] = useState<SaveStatus>("idle");
 
