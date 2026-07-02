@@ -40,28 +40,52 @@ function applyProtection(settings: ProtectionSettings) {
       overlay = document.createElement("div");
       overlay.id = "__zhiyy_blur__";
       Object.assign(overlay.style, {
-        position: "fixed",
-        inset: "0",
-        zIndex: "999999",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        background: "rgba(10,10,10,0.55)",
-        display: "none",
-        pointerEvents: "none",
+        position:           "fixed",
+        inset:              "0",
+        zIndex:             "999998",
+        backdropFilter:     "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        background:         "rgba(5,5,5,0.65)",
+        display:            "none",
+        pointerEvents:      "none",
+        transition:         "opacity 0.2s ease",
       });
       document.body.appendChild(overlay);
     }
     const el = overlay;
 
-    const onLeave = () => { el.style.display = "block"; };
-    const onEnter = () => { el.style.display = "none"; };
+    const show = () => { el.style.display = "block"; };
+    const hide = () => { el.style.display = "none"; };
 
-    document.addEventListener("mouseleave", onLeave);
-    document.addEventListener("mouseenter", onEnter);
+    // Kursor keluar dari window browser
+    const onMouseLeave = (e: MouseEvent) => {
+      // pastikan benar-benar keluar dari document (bukan masuk elemen lain)
+      if (e.relatedTarget === null) show();
+    };
+    const onMouseEnter = () => hide();
+
+    // Tab switch / minimize
+    const onVisibility = () => {
+      if (document.hidden) show();
+      else hide();
+    };
+
+    // Window blur (alt+tab, click outside browser)
+    const onWindowBlur  = () => show();
+    const onWindowFocus = () => hide();
+
+    document.addEventListener("mouseleave",        onMouseLeave);
+    document.addEventListener("mouseenter",        onMouseEnter);
+    document.addEventListener("visibilitychange",  onVisibility);
+    window.addEventListener("blur",                onWindowBlur);
+    window.addEventListener("focus",               onWindowFocus);
 
     activeCleanups.push(() => {
-      document.removeEventListener("mouseleave", onLeave);
-      document.removeEventListener("mouseenter", onEnter);
+      document.removeEventListener("mouseleave",       onMouseLeave);
+      document.removeEventListener("mouseenter",       onMouseEnter);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("blur",               onWindowBlur);
+      window.removeEventListener("focus",              onWindowFocus);
       el.style.display = "none";
     });
   } else {
