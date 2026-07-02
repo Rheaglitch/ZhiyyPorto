@@ -30,7 +30,7 @@ export function FloatingActions() {
       )}
       style={{
         right:  "20px",
-        bottom: "90px",  // Tidio ~60px + 20px padding + 10px gap
+        bottom: "145px", // di atas chatbot kita (36px) + Tidio (~60px) + gap 5px tiap
       }}
     >
       <ArrowUp size={16} />

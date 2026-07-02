@@ -20,9 +20,9 @@ function clampPos(x: number, y: number): { x: number; y: number } {
 }
 
 function getDefaultPos(): { x: number; y: number } {
-  // scroll-to-top sudah pindah ke kiri — chatbot bebas di kanan bawah
+  // Sejajar dengan Tidio di kanan bawah — bottom 20px
   const x = window.innerWidth  - BALL_SIZE - 20;
-  const y = window.innerHeight - BALL_SIZE - 88; // sama tinggi dengan scroll-to-top
+  const y = window.innerHeight - BALL_SIZE - 20;
   return clampPos(x, y);
 }
 
