@@ -20,10 +20,9 @@ function clampPos(x: number, y: number): { x: number; y: number } {
 }
 
 function getDefaultPos(): { x: number; y: number } {
-  // scroll-to-top: bottom 88px, right 20px, size 40px
-  // chatbot tepat di atas: 88 + 40 + 12 = 140px from bottom
+  // scroll-to-top sudah pindah ke kiri — chatbot bebas di kanan bawah
   const x = window.innerWidth  - BALL_SIZE - 20;
-  const y = window.innerHeight - BALL_SIZE - 140;
+  const y = window.innerHeight - BALL_SIZE - 88; // sama tinggi dengan scroll-to-top
   return clampPos(x, y);
 }
 

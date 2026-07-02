@@ -18,7 +18,7 @@ export function FloatingActions() {
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="Scroll to top"
       className={cn(
-        "fixed z-[9990]", // Below Tidio (9999) but above everything else
+        "fixed z-[9990]",
         "w-10 h-10 rounded-full",
         "bg-blood-700 hover:bg-blood-600 text-white",
         "flex items-center justify-center",
@@ -29,10 +29,8 @@ export function FloatingActions() {
           : "opacity-0 translate-y-4 pointer-events-none"
       )}
       style={{
-        // Tidio default sits at bottom:20px right:20px, size ~52px
-        // We go: 20 + 52 + 16 (gap) = 88px from bottom, same right side
-        right:  "20px",
-        bottom: "88px",
+        left:   "20px",
+        bottom: "88px",  // above mobile bottom nav on mobile
       }}
     >
       <ArrowUp size={16} />
