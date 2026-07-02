@@ -2,9 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { MessagesInbox } from "@/components/admin/MessagesInbox";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Messages" };
+export const metadata: Metadata = { title: "WA Inbox" };
 
-export default async function MessagesPage() {
+export default async function WaInboxPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sb = (await createClient()) as any;
 
@@ -20,7 +20,7 @@ export default async function MessagesPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-dark-100 flex items-center gap-3">
-            Email Inbox
+            WA Inbox
             {unread > 0 && (
               <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-blood-700 text-white">
                 {unread} baru
@@ -28,10 +28,19 @@ export default async function MessagesPage() {
             )}
           </h1>
           <p className="text-xs text-dark-600 mt-1 font-mono">
-            {`// semua pesan dari form contact — notifikasi juga dikirim ke email kamu`}
+            {`// notifikasi WhatsApp — pesan yang sama dikirim ke WA kamu`}
           </p>
         </div>
       </div>
+
+      {/* Info banner */}
+      <div className="mb-4 px-4 py-3 rounded-lg border border-dark-700 bg-dark-900/50 text-xs text-dark-400 font-mono">
+        {`// Pesan di sini adalah yang sama dengan Email Inbox. `}
+        {`WA Inbox menampilkan pesan yang juga dikirimkan sebagai notifikasi ke WhatsApp kamu via Fonnte.`}
+        <br />
+        {`// Untuk melihat riwayat WA langsung, buka WhatsApp di HP kamu.`}
+      </div>
+
       <MessagesInbox messages={messages ?? []} />
     </div>
   );
