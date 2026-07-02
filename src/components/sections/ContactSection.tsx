@@ -58,11 +58,16 @@ export interface SocialLink {
 }
 
 export interface ContactSectionData {
-  socialLinks?: SocialLink[];
-  location?:    string;
-  mapsUrl?:     string;   // Google Maps embed URL
+  socialLinks?:  SocialLink[];
+  location?:     string;
+  mapsUrl?:      string;
   showLocation?: boolean;
   showMaps?:     boolean;
+  // heading
+  headingLabel?:   string;  // "— Get In Touch —"
+  headingMain?:    string;  // "Let's"
+  headingAccent?:  string;  // "Connect"
+  headingSubtitle?: string; // deskripsi bawah judul
 }
 
 interface ContactSectionProps {
@@ -89,24 +94,29 @@ export function ContactSection({ contactData, contactInfo = {} }: ContactSection
   ];
 
   const links       = (contactData?.socialLinks ?? (Object.keys(contactInfo).length ? legacyLinks : DEFAULT_LINKS))
-    .filter(l => l.visible !== false); // hide invisible links
+    .filter(l => l.visible !== false);
   const location    = contactData?.location    ?? contactInfo.location ?? "Indonesia";
   const mapsUrl     = contactData?.mapsUrl     ?? "";
   const showLocation = contactData?.showLocation !== false;
   const showMaps     = contactData?.showMaps    === true && !!mapsUrl;
-  const compact      = links.length > 4; // icon-only mode when >4 links
+  const compact      = links.length > 4;
+
+  // heading
+  const headingLabel    = contactData?.headingLabel    ?? "— Get In Touch —";
+  const headingMain     = contactData?.headingMain     ?? "Let\u2019s";
+  const headingAccent   = contactData?.headingAccent   ?? "Connect";
+  const headingSubtitle = contactData?.headingSubtitle ?? "Ada project menarik, mau kolaborasi, atau sekadar ngobrol? Aku selalu terbuka — reach out kapan saja.";
 
   return (
     <section id="contact" className="py-20 px-6" style={{ background: "var(--section-alt)" }}>
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
-          <span className="text-blood-600 font-mono text-sm tracking-widest uppercase">— Get In Touch —</span>
+          <span className="text-blood-600 font-mono text-sm tracking-widest uppercase">{headingLabel}</span>
           <h2 className="mt-3 text-3xl md:text-4xl font-bold" style={{ color: "var(--text-primary)" }}>
-            Let&apos;s <span className="text-gradient-blood">Connect</span>
+            {headingMain} <span className="text-gradient-blood">{headingAccent}</span>
           </h2>
           <p className="mt-3 text-sm max-w-md mx-auto leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            Ada project menarik, mau kolaborasi, atau sekadar ngobrol?
-            Aku selalu terbuka — reach out kapan saja.
+            {headingSubtitle}
           </p>
         </div>
 

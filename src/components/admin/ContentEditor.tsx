@@ -114,6 +114,12 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
   const [skillsTitleAccent, setSkillsTitleAccent] = useState(sh.titleAccent ?? "Tools");
   const [skillsSubtitle,    setSkillsSubtitle   ] = useState(sh.subtitle    ?? "Dari kode sampai kanvas — tools yang aku kuasai.");
 
+  // ── Contact heading ──
+  const [contactHeadingLabel,    setContactHeadingLabel   ] = useState<string>((ci.headingLabel    as string) ?? "— Get In Touch —");
+  const [contactHeadingMain,     setContactHeadingMain    ] = useState<string>((ci.headingMain     as string) ?? "Let\u2019s");
+  const [contactHeadingAccent,   setContactHeadingAccent  ] = useState<string>((ci.headingAccent   as string) ?? "Connect");
+  const [contactHeadingSubtitle, setContactHeadingSubtitle] = useState<string>((ci.headingSubtitle as string) ?? "Ada project menarik, mau kolaborasi, atau sekadar ngobrol? Aku selalu terbuka — reach out kapan saja.");
+
   // ── Contact — social links (dynamic) ──
   const ci = s.contact_info as Record<string, unknown> ?? {};
 
@@ -206,7 +212,12 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
       { key: "about_bio",     value: { paragraphs: aboutParas } },
       { key: "about_stats",   value: { items: aboutStats } },
       { key: "about_traits",  value: { items: aboutTraits } },
-      { key: "contact_info", value: { socialLinks, location, showLocation, mapsUrl, showMaps, wa_number: waNumber } },
+      { key: "contact_info", value: {
+          socialLinks, location, showLocation, mapsUrl, showMaps, wa_number: waNumber,
+          headingLabel: contactHeadingLabel, headingMain: contactHeadingMain,
+          headingAccent: contactHeadingAccent, headingSubtitle: contactHeadingSubtitle,
+        }
+      },
       { key: "skills_heading", value: { label: skillsLabel, titleMain: skillsTitleMain, titleAccent: skillsTitleAccent, subtitle: skillsSubtitle } },
     ];
 
@@ -536,6 +547,42 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
             <span className="text-gradient-blood">{skillsTitleAccent || "Tools"}</span>
           </p>
           <p className="text-xs text-dark-500">{skillsSubtitle || "Dari kode sampai kanvas..."}</p>
+        </div>
+      </Section>
+
+      <Section title="Contact — Heading Section">
+        <div>
+          <label className={labelCls}>Label kecil (merah, atas judul)</label>
+          <input value={contactHeadingLabel} onChange={e => setContactHeadingLabel(e.target.value)}
+            className={inputCls} placeholder="— Get In Touch —" />
+          <p className="text-[10px] text-blood-700 font-mono mt-1">Tampil merah di atas judul</p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Judul — bagian putih</label>
+            <input value={contactHeadingMain} onChange={e => setContactHeadingMain(e.target.value)}
+              className={inputCls} placeholder="Let's" />
+          </div>
+          <div>
+            <label className={labelCls}>Judul — bagian merah (aksen)</label>
+            <input value={contactHeadingAccent} onChange={e => setContactHeadingAccent(e.target.value)}
+              className={`${inputCls} border-blood-900/60 focus:border-blood-600`} placeholder="Connect" />
+          </div>
+        </div>
+        <div>
+          <label className={labelCls}>Subjudul / deskripsi</label>
+          <textarea value={contactHeadingSubtitle} onChange={e => setContactHeadingSubtitle(e.target.value)}
+            rows={2} className={`${inputCls} resize-none`}
+            placeholder="Ada project menarik, mau kolaborasi, atau sekadar ngobrol?" />
+        </div>
+        {/* Preview */}
+        <div className="mt-2 px-5 py-4 rounded-xl bg-dark-950 border border-dark-800 text-center space-y-1">
+          <p className="text-blood-600 font-mono text-xs tracking-widest uppercase">{contactHeadingLabel || "— Get In Touch —"}</p>
+          <p className="text-lg font-bold" style={{ color: "var(--text-primary, #e8e8e8)" }}>
+            {contactHeadingMain || "Let\u2019s"}{" "}
+            <span className="text-gradient-blood">{contactHeadingAccent || "Connect"}</span>
+          </p>
+          <p className="text-xs text-dark-500 max-w-xs mx-auto">{contactHeadingSubtitle || "Deskripsi singkat..."}</p>
         </div>
       </Section>
 
